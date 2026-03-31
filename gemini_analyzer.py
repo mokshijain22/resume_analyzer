@@ -129,10 +129,22 @@ Return ONLY valid JSON (no markdown, no backticks):
         raw = re.sub(r"^```(?:json)?", "", raw).strip()
         raw = re.sub(r"```$",         "", raw).strip()
 
-        data = json.loads(raw)
-        print(f"[groq] JSON parsed OK", flush=True)
-        return _sanitize(data, mode)
+        # 🔥 Extract only JSON part (important)
+        import re
+        match = re.search(r"\{.*\}", raw, re.DOTALL)
+        if match:
+            raw = match.group()
 
+        # 🔥 Safe parsing
+        try:
+            data = json.loads(raw)
+            print("[groq] JSON parsed OK", flush=True)
+        except Exception as e:
+            print("[groq] JSON parse error:", e, flush=True)
+            print("RAW RESPONSE:", raw, flush=True)
+            return _fallback(mode, "Invalid JSON from model")
+
+        return _sanitize(data, mode)
     except json.JSONDecodeError as e:
         print(f"[groq] JSON parse error: {e}", flush=True)
         return _fallback(mode, f"JSON error: {str(e)[:80]}")
