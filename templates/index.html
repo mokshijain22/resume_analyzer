@@ -205,8 +205,7 @@ textarea::placeholder{color:#c8c5d0}
         <div class="ftypes" id="ftypes"><span class="ftype">PDF</span><span class="ftype">DOCX</span><span class="ftype">Max 5MB</span></div>
         <div class="file-ok" id="fileOk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span id="fileName">file selected</span></div>
       </div>
-      <input type="file" id="resumeFile" name="resume" accept=".pdf,.docx" style="display:none"/>
-
+        <input type="file" id="resumeFile" name="resume" accept=".pdf,.docx"/>  
       <div class="div-or">job description (optional)</div>
 
       <!-- JD TOGGLE -->
@@ -234,6 +233,9 @@ textarea::placeholder{color:#c8c5d0}
       <div style="margin-top:20px">
         <div class="submit-row">
           <button type="submit" class="btn-main">
+            <button type="submit" style="margin-top:10px;background:red;color:white;padding:10px;border:none;border-radius:6px;">
+              TEST SUBMIT
+            </button>
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
             <span>Analyze my resume</span>
             <svg class="arrow" viewBox="0 0 24 24" style="width:14px;height:14px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
@@ -309,13 +311,13 @@ function loadSample(role){
   jd.style.borderColor='#c4c0f0';jd.style.boxShadow='0 0 0 4px rgba(108,99,255,0.08)';
   setTimeout(()=>{jd.style.borderColor='';jd.style.boxShadow=''},1500);
 }
-form.addEventListener('submit',e=>{
+/*form.addEventListener('submit',e=>{
   console.log("Submitting form...");
   console.log("Files:", fi.files);
   err.className='error-msg';
   if(!fi.files.length){e.preventDefault();showClientError('Please upload your resume (PDF or DOCX).');return}
   startLoading();
-});
+});*/ 
 function showClientError(msg){err.textContent=msg;err.classList.add('show');err.scrollIntoView({behavior:'smooth',block:'center'})}
 function startLoading(){
   document.getElementById('loadingOverlay').style.display='flex';
