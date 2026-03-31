@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ResumeAI — ATS Analyzer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf8f4;--white:#fff;--ink:#1a1825;--ink2:#3a3858;
+  --muted:#7a7890;--subtle:#b0aec0;--border:#e8e5de;--border2:#d4d1ca;
+  --accent:#6c63ff;--accent-bg:#f3f1fb;--accent-border:#e0dcf7;
+  --green:#0d7a52;--green-bg:#f0fdf7;--green-border:#b6f0d8;
+  --radius:14px;--radius-lg:18px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes floatA{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-18px) rotate(2deg)}}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+@keyframes floatC{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes shimmer{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:0.6}}
+@keyframes slideRight{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
+.blob-wrap{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(72px);opacity:0.6}
+.blob-1{width:520px;height:520px;background:#ede9ff;top:-130px;right:-110px;animation:floatA 10s ease-in-out infinite}
+.blob-2{width:400px;height:400px;background:#fde8d8;bottom:-90px;left:-90px;animation:floatB 12s ease-in-out infinite}
+.blob-3{width:280px;height:280px;background:#d4f5e9;top:38%;right:4%;animation:floatC 8s ease-in-out infinite}
+.page{max-width:800px;margin:0 auto;padding:40px 28px 100px;position:relative;z-index:1}
+nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:72px;animation:fadeIn 0.5s ease both}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo-mark{width:38px;height:38px;background:var(--ink);border-radius:10px;display:flex;align-items:center;justify-content:center;transition:transform 0.3s cubic-bezier(.34,1.56,.64,1)}
+.logo-mark:hover{transform:rotate(-8deg) scale(1.1)}
+.logo-mark svg{width:18px;height:18px;fill:none;stroke:var(--bg);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.logo-name{font-family:'Playfair Display',serif;font-size:19px;font-weight:700;letter-spacing:-0.02em;color:var(--ink)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-pill{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;padding:5px 11px;border-radius:20px;border:1px solid var(--border);color:var(--subtle)}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:#00c896;animation:blink 2.5s ease-in-out infinite}
+.eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:22px;animation:slideRight 0.6s 0.05s ease both}
+.eyebrow-bar{width:28px;height:2px;background:linear-gradient(90deg,var(--accent),#00c896);border-radius:1px}
+.eyebrow-text{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent)}
+h1{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,5.5vw,3.8rem);font-weight:900;line-height:1.05;letter-spacing:-0.035em;color:var(--ink);margin-bottom:20px;animation:fadeUp 0.6s 0.12s ease both}
+.h1-italic{font-style:italic;background:linear-gradient(135deg,var(--accent) 0%,#a78bfa 50%,#00c896 100%);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:shimmer 5s ease infinite}
+.h1-line{position:relative;display:inline-block}
+.h1-underline{position:absolute;bottom:-3px;left:0;height:3px;width:100%;background:linear-gradient(90deg,var(--accent),#a78bfa);border-radius:2px;animation:fadeIn 0.6s 1s ease both;opacity:0}
+.hero-sub{font-size:1rem;color:var(--muted);font-weight:300;line-height:1.85;max-width:500px;margin-bottom:36px;animation:fadeUp 0.6s 0.2s ease both}
+.stat-row{display:flex;gap:32px;margin-bottom:52px;animation:fadeUp 0.6s 0.28s ease both;flex-wrap:wrap}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:700;color:var(--ink);line-height:1}
+.stat-num sup{font-size:1rem;color:var(--accent)}
+.stat-label{font-size:12px;color:var(--subtle);margin-top:2px}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:32px;animation:fadeUp 0.6s 0.32s ease both}
+.step{background:var(--bg);padding:18px 20px;transition:background 0.2s}
+.step:hover{background:var(--accent-bg)}
+.step-n{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--subtle);letter-spacing:0.08em;margin-bottom:7px}
+.step-t{font-size:13px;font-weight:500;color:var(--ink2);line-height:1.4}
+.form-area{background:var(--white);border:1px solid #ece9e2;border-radius:22px;padding:32px;animation:fadeUp 0.6s 0.38s ease both;position:relative;overflow:hidden}
+.form-area::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),#a78bfa,#00c896)}
+.field-label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--subtle);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.field-label .dot{width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.server-error{background:#fff5f0;border:1px solid #ffd4be;border-radius:12px;padding:14px 18px;font-size:13px;color:#b04820;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px}
+.server-error svg{width:16px;height:16px;stroke:#b04820;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:1px}
+
+/* ROLE SELECTOR */
+.role-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.role-btn{padding:10px 8px;border:1.5px solid var(--border2);border-radius:10px;background:var(--bg);font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;text-align:center}
+.role-btn:hover{border-color:var(--accent-border);color:var(--accent);background:var(--accent-bg)}
+.role-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-bg);font-weight:500}
+.role-btn .role-icon{display:block;font-size:18px;margin-bottom:4px}
+
+/* JD SECTION */
+.jd-toggle-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.jd-toggle{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);cursor:pointer}
+.toggle-switch{width:36px;height:20px;background:var(--border2);border-radius:20px;position:relative;transition:background 0.2s;flex-shrink:0}
+.toggle-switch.on{background:var(--accent)}
+.toggle-knob{width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.15)}
+.toggle-switch.on .toggle-knob{left:18px}
+.sample-jd-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.sample-btn{font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;letter-spacing:0.04em;transition:all 0.15s}
+.sample-btn:hover{border-color:var(--accent-border);color:var(--accent);background:var(--accent-bg)}
+
+.dropzone{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:48px 24px;text-align:center;background:var(--bg);cursor:pointer;transition:all 0.25s;position:relative;overflow:hidden;margin-bottom:20px}
+.dropzone:hover{border-color:var(--accent);background:#fdfdff;transform:translateY(-2px)}
+.dropzone.has-file{border-color:#00c896;border-style:solid;background:var(--green-bg)}
+.dropzone.drag-over{border-color:var(--accent);background:var(--accent-bg);border-style:solid}
+.drop-icon-wrap{width:54px;height:54px;border-radius:14px;background:var(--accent-bg);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;transition:transform 0.3s cubic-bezier(.34,1.56,.64,1)}
+.dropzone:hover .drop-icon-wrap{transform:translateY(-5px) scale(1.05)}
+.drop-icon-wrap svg{width:22px;height:22px;stroke:var(--accent);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.drop-main{font-size:15px;font-weight:500;color:var(--ink2);margin-bottom:5px}
+.drop-hint{font-size:12px;color:var(--subtle)}
+.drop-hint b{color:var(--accent);font-weight:500}
+.ftypes{display:flex;gap:6px;justify-content:center;margin-top:12px}
+.ftype{font-family:'JetBrains Mono',monospace;font-size:9.5px;padding:3px 9px;border-radius:4px;background:var(--accent-bg);color:#8c84cc;border:1px solid var(--accent-border);letter-spacing:0.05em}
+.file-ok{display:none;align-items:center;justify-content:center;gap:8px;margin-top:12px;font-size:13px;color:var(--green);font-weight:500}
+.file-ok svg{width:15px;height:15px;stroke:var(--green);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.div-or{display:flex;align-items:center;gap:12px;margin:0 0 18px;color:var(--border2);font-size:11px;font-family:'JetBrains Mono',monospace;letter-spacing:0.08em}
+.div-or::before,.div-or::after{content:'';flex:1;height:1px;background:var(--border)}
+.ta-wrap{position:relative;margin-bottom:24px}
+textarea{width:100%;border:1.5px solid var(--border2);border-radius:var(--radius);background:var(--bg);font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--ink2);padding:14px 16px 36px;resize:none;outline:none;height:120px;line-height:1.7;font-weight:300;transition:border-color 0.2s,box-shadow 0.2s,background 0.2s}
+textarea:focus{border-color:#c4c0f0;box-shadow:0 0 0 4px rgba(108,99,255,0.08);background:var(--white)}
+textarea::placeholder{color:#c8c5d0}
+.ta-footer{position:absolute;bottom:11px;left:16px;right:16px;display:flex;justify-content:space-between;pointer-events:none}
+.ta-meta{font-size:11px;color:#c8c5d0;font-family:'JetBrains Mono',monospace}
+.submit-row{display:flex;gap:12px;align-items:center}
+.btn-main{flex:1;padding:15px 24px;background:var(--ink);border:none;border-radius:var(--radius);color:var(--bg);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.2s;position:relative;overflow:hidden;letter-spacing:0.01em}
+.btn-main::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,#2d2a42,var(--ink));opacity:0;transition:opacity 0.2s}
+.btn-main:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(26,24,37,0.22)}
+.btn-main:hover::before{opacity:1}
+.btn-main:active{transform:translateY(0)}
+.btn-main>*{position:relative;z-index:1}
+.btn-main svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-main .arrow{transition:transform 0.2s}
+.btn-main:hover .arrow{transform:translateX(4px)}
+.error-msg{display:none;background:#fff5f0;border:1px solid #ffd4be;border-radius:10px;padding:12px 16px;font-size:13px;color:#b04820;margin-bottom:16px}
+.error-msg.show{display:block}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(250,248,244,0.95);z-index:100;flex-direction:column;align-items:center;justify-content:center;gap:24px}
+.loading-overlay.active{display:flex}
+.spinner{width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+.loading-title{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:700;color:var(--ink)}
+.loading-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.08em;color:var(--subtle);text-transform:uppercase}
+.lsteps{display:flex;flex-direction:column;gap:12px;margin-top:4px}
+.lstep{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--subtle);transition:color 0.3s}
+.lstep.active{color:var(--accent)}
+.lstep.done{color:var(--green)}
+.lstep-dot{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background 0.3s}
+.lstep.active .lstep-dot{background:var(--accent);animation:pulse 1s ease-in-out infinite}
+.lstep.done .lstep-dot{background:#00c896}
+.features{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:20px;animation:fadeUp 0.6s 0.48s ease both}
+.feat{display:flex;align-items:flex-start;gap:12px;background:var(--white);border:1px solid #ece9e2;border-radius:var(--radius);padding:14px 16px;transition:all 0.2s}
+.feat:hover{border-color:var(--accent-border);transform:translateY(-2px);box-shadow:0 6px 20px rgba(108,99,255,0.08)}
+.feat-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.feat-icon svg{width:16px;height:16px;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.fi-purple{background:var(--accent-bg);border:1px solid var(--accent-border)}.fi-purple svg{stroke:var(--accent)}
+.fi-green{background:var(--green-bg);border:1px solid var(--green-border)}.fi-green svg{stroke:var(--green)}
+.fi-orange{background:#fff5f0;border:1px solid #ffd4be}.fi-orange svg{stroke:#b04820}
+.fi-blue{background:#eff6ff;border:1px solid #bfdbfe}.fi-blue svg{stroke:#1d4ed8}
+.feat-title{font-size:13px;font-weight:500;color:var(--ink2);margin-bottom:2px}
+.feat-sub{font-size:11.5px;color:var(--subtle);line-height:1.5}
+</style>
+
+<div class="blob-wrap"><div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div></div>
+
+<div class="page">
+  <nav>
+    <div class="logo">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="12" y2="17"/></svg></div>
+      <span class="logo-name">ResumeAI</span>
+    </div>
+    <div class="nav-right"><div class="nav-dot"></div><div class="nav-pill">Groq LLaMA-3.3</div></div>
+  </nav>
+
+  <div class="eyebrow"><div class="eyebrow-bar"></div><span class="eyebrow-text">Hiring Intelligence Platform</span></div>
+  <h1>Know exactly why<br>you're not getting<br><span class="h1-line"><span class="h1-italic">callbacks.</span><span class="h1-underline"></span></span></h1>
+  <p class="hero-sub">Production-grade ATS analysis — explainable scores, semantic skill matching, recruiter simulation, and a week-by-week learning roadmap.</p>
+
+  <div class="stat-row">
+    <div class="stat"><div class="stat-num">9</div><div class="stat-label">Analysis dimensions</div></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Score categories</div></div>
+    <div class="stat"><div class="stat-num">70<sup>+</sup></div><div class="stat-label">Keywords tracked</div></div>
+    <div class="stat"><div class="stat-num" style="font-size:1.3rem">LLaMA<sup> 3.3</sup></div><div class="stat-label">AI model</div></div>
+  </div>
+
+  <div class="steps">
+    <div class="step"><div class="step-n">Step 01</div><div class="step-t">Select role & upload resume</div></div>
+    <div class="step"><div class="step-n">Step 02</div><div class="step-t">Paste JD or use market profile</div></div>
+    <div class="step"><div class="step-n">Step 03</div><div class="step-t">Get full hiring intelligence report</div></div>
+  </div>
+
+  <form id="mainForm" action="/analyze" method="POST" enctype="multipart/form-data">
+    <div class="form-area">
+      {% if error %}
+      <div class="server-error">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ error }}
+      </div>
+      {% endif %}
+      <div id="clientError" class="error-msg"></div>
+
+      <!-- ROLE SELECTOR -->
+      <div class="field-label"><span class="dot"></span>Target Role</div>
+      <div class="role-row" id="roleRow">
+        <button type="button" class="role-btn active" data-role="ML Engineer" onclick="setRole(this)">
+          <span class="role-icon">🤖</span>ML Engineer
+        </button>
+        <button type="button" class="role-btn" data-role="Data Analyst" onclick="setRole(this)">
+          <span class="role-icon">📊</span>Data Analyst
+        </button>
+        <button type="button" class="role-btn" data-role="Backend Developer" onclick="setRole(this)">
+          <span class="role-icon">⚙️</span>Backend Dev
+        </button>
+      </div>
+      <input type="hidden" name="role" id="roleInput" value="ML Engineer"/>
+
+      <!-- RESUME UPLOAD -->
+      <div class="field-label" style="margin-top:20px"><span class="dot"></span>Your Resume</div>
+      <div class="dropzone" id="dz" onclick="document.getElementById('resumeFile').click()">
+        <div class="drop-icon-wrap"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+        <div class="drop-main" id="dropMain">Drag & drop your resume here</div>
+        <div class="drop-hint" id="dropHint">or <b>click to browse</b></div>
+        <div class="ftypes" id="ftypes"><span class="ftype">PDF</span><span class="ftype">DOCX</span><span class="ftype">Max 5MB</span></div>
+        <div class="file-ok" id="fileOk"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg><span id="fileName">file selected</span></div>
+      </div>
+      <input type="file" id="resumeFile" name="resume" accept=".pdf,.docx" style="display:none"/>
+
+      <div class="div-or">job description (optional)</div>
+
+      <!-- JD TOGGLE -->
+      <div class="jd-toggle-row">
+        <div class="field-label" style="margin-bottom:0"><span class="dot"></span>Job Description</div>
+        <div class="jd-toggle" onclick="toggleJD()">
+          <span id="toggleLabel" style="font-size:12px">Have a JD? Turn on</span>
+          <div class="toggle-switch" id="jdToggle"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+
+      <div id="jdSection" style="display:none;margin-top:12px">
+        <div class="sample-jd-row">
+          <span style="font-size:11px;color:var(--subtle);font-family:'JetBrains Mono',monospace;align-self:center">Sample:</span>
+          <button type="button" class="sample-btn" onclick="loadSample('ML Engineer')">ML Engineer</button>
+          <button type="button" class="sample-btn" onclick="loadSample('Data Analyst')">Data Analyst</button>
+          <button type="button" class="sample-btn" onclick="loadSample('Backend Developer')">Backend Dev</button>
+        </div>
+        <div class="ta-wrap">
+          <textarea id="jdText" name="jd_text" placeholder="Paste the full job description here, or use a sample above…"></textarea>
+          <div class="ta-footer"><span class="ta-meta">leave blank to compare vs market profile</span><span class="ta-meta" id="charCount">0 chars</span></div>
+        </div>
+      </div>
+
+      <div style="margin-top:20px">
+        <div class="submit-row">
+          <button type="submit" class="btn-main">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span>Analyze my resume</span>
+            <svg class="arrow" viewBox="0 0 24 24" style="width:14px;height:14px"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="features">
+    <div class="feat"><div class="feat-icon fi-purple"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div><div><div class="feat-title">Explainable ATS Score</div><div class="feat-sub">6-category weighted breakdown</div></div></div>
+    <div class="feat"><div class="feat-icon fi-green"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div><div><div class="feat-title">Recruiter Simulation</div><div class="feat-sub">Brutally honest rejection reasons</div></div></div>
+    <div class="feat"><div class="feat-icon fi-orange"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div><div class="feat-title">Experience Depth</div><div class="feat-sub">Beginner / Intermediate / Advanced per skill</div></div></div>
+    <div class="feat"><div class="feat-icon fi-blue"><svg viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div><div class="feat-title">Learning Roadmap</div><div class="feat-sub">Week-by-week hands-on action plan</div></div></div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-title">Building your report</div>
+  <div class="loading-sub">Full analysis — takes 10–15 seconds</div>
+  <div class="lsteps">
+    <div class="lstep" id="ls1"><div class="lstep-dot"></div>Parsing resume text</div>
+    <div class="lstep" id="ls2"><div class="lstep-dot"></div>Computing ATS score breakdown</div>
+    <div class="lstep" id="ls3"><div class="lstep-dot"></div>Analysing experience depth & projects</div>
+    <div class="lstep" id="ls4"><div class="lstep-dot"></div>Running recruiter simulation</div>
+    <div class="lstep" id="ls5"><div class="lstep-dot"></div>Generating roadmap & improved bullets</div>
+  </div>
+</div>
+
+<script>
+const SAMPLE_JDS = {{ sample_jds | tojson }};
+const dz=document.getElementById('dz'),fi=document.getElementById('resumeFile');
+const jd=document.getElementById('jdText'),cc=document.getElementById('charCount');
+const form=document.getElementById('mainForm'),err=document.getElementById('clientError');
+let jdVisible=false;
+
+fi.addEventListener('change',e=>{if(e.target.files[0])showFile(e.target.files[0].name)});
+if(jd) jd.addEventListener('input',()=>{cc.textContent=jd.value.length+' chars'});
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{
+  e.preventDefault();dz.classList.remove('drag-over');
+  const f=e.dataTransfer.files[0];
+  if(f&&(f.name.endsWith('.pdf')||f.name.endsWith('.docx'))){const dt=new DataTransfer();dt.items.add(f);fi.files=dt.files;showFile(f.name);}
+  else if(f){showClientError('Only PDF and DOCX files are supported.');}
+});
+function showFile(name){
+  dz.classList.add('has-file');
+  document.getElementById('fileName').textContent=name;
+  document.getElementById('fileOk').style.display='flex';
+  document.getElementById('dropMain').textContent='Resume selected';
+  document.getElementById('dropHint').style.display='none';
+  document.getElementById('ftypes').style.display='none';
+}
+function setRole(btn){
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('roleInput').value=btn.dataset.role;
+}
+function toggleJD(){
+  jdVisible=!jdVisible;
+  const sec=document.getElementById('jdSection');
+  const tog=document.getElementById('jdToggle');
+  const lbl=document.getElementById('toggleLabel');
+  sec.style.display=jdVisible?'block':'none';
+  tog.classList.toggle('on',jdVisible);
+  lbl.textContent=jdVisible?'JD mode on':'Have a JD? Turn on';
+}
+function loadSample(role){
+  if(jd) { jd.value=SAMPLE_JDS[role]||''; cc.textContent=jd.value.length+' chars'; }
+  jd.style.borderColor='#c4c0f0';jd.style.boxShadow='0 0 0 4px rgba(108,99,255,0.08)';
+  setTimeout(()=>{jd.style.borderColor='';jd.style.boxShadow=''},1500);
+}
+form.addEventListener('submit',e=>{
+  err.className='error-msg';
+  if(!fi.files.length){e.preventDefault();showClientError('Please upload your resume (PDF or DOCX).');return}
+  startLoading();
+});
+function showClientError(msg){err.textContent=msg;err.classList.add('show');err.scrollIntoView({behavior:'smooth',block:'center'})}
+function startLoading(){
+  document.getElementById('loadingOverlay').style.display='flex';
+  const steps=['ls1','ls2','ls3','ls4','ls5'];let i=0;
+  function next(){
+    if(i>0){const p=document.getElementById(steps[i-1]);p.classList.remove('active');p.classList.add('done')}
+    if(i<steps.length){document.getElementById(steps[i]).classList.add('active');i++;setTimeout(next,1400)}
+  }
+  next();
+}
+</script>

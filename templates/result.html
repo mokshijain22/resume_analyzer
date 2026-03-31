@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>ResumeAI — Full Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap"/>
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf8f4;--white:#fff;--ink:#1a1825;--ink2:#3a3858;
+  --muted:#7a7890;--subtle:#b0aec0;--border:#e8e5de;
+  --accent:#6c63ff;--accent-bg:#f3f1fb;--accent-border:#e0dcf7;
+  --green:#0d7a52;--green-bg:#f0fdf7;--green-border:#b6f0d8;
+  --orange:#b04820;--orange-bg:#fff5f0;--orange-border:#ffd4be;
+  --red:#991b1b;--red-bg:#fef2f2;--red-border:#fecaca;
+  --r:12px;--rl:16px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes floatA{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes floatB{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes ringFill{from{stroke-dashoffset:283}to{stroke-dashoffset:var(--target)}}
+@keyframes popIn{0%{opacity:0;transform:scale(0.8)}100%{opacity:1;transform:scale(1)}}
+@keyframes countUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes barGrow{from{width:0}to{width:var(--w)}}
+.blob-wrap{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:0.3}
+.blob-1{width:380px;height:380px;background:#ede9ff;top:-70px;right:-50px;animation:floatA 9s ease-in-out infinite}
+.blob-2{width:280px;height:280px;background:#d4f5e9;bottom:-40px;left:-40px;animation:floatB 11s ease-in-out infinite}
+.page{max-width:1100px;margin:0 auto;padding:24px 20px 80px;position:relative;z-index:1}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;animation:fadeIn 0.4s ease both;flex-wrap:wrap;gap:8px}
+.logo{display:flex;align-items:center;gap:8px;text-decoration:none}
+.logo-mark{width:28px;height:28px;background:var(--ink);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.logo-mark svg{width:13px;height:13px;fill:none;stroke:var(--bg);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.logo-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;letter-spacing:-0.02em;color:var(--ink)}
+.btn-back{font-size:11.5px;color:var(--muted);border:1px solid var(--border);border-radius:7px;padding:6px 12px;cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:5px;text-decoration:none}
+.btn-back:hover{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)}
+.btn-back svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* VALIDATION NOTICE */
+.fixes-bar{display:flex;align-items:center;gap:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:9px 14px;margin-bottom:14px;font-size:12px;color:#92600a;animation:fadeUp 0.3s ease both}
+.fixes-bar svg{width:13px;height:13px;stroke:#92600a;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* BANNER */
+.banner{background:var(--ink);border-radius:20px;padding:24px 28px;margin-bottom:16px;position:relative;overflow:hidden;animation:fadeUp 0.5s 0.05s ease both}
+.banner::after{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:linear-gradient(135deg,rgba(108,99,255,0.2),rgba(0,200,150,0.1));pointer-events:none}
+.banner-grid{display:flex;flex-wrap:wrap;gap:16px;align-items:center;position:relative;z-index:1}
+.banner-ring{display:flex;flex-direction:column;align-items:center;gap:6px;flex-shrink:0;padding-right:24px;border-right:1px solid rgba(255,255,255,0.08)}
+.ring-wrap{position:relative;width:86px;height:86px}
+.ring-wrap svg{width:86px;height:86px;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:rgba(255,255,255,0.07);stroke-width:7}
+.ring-fill{fill:none;stroke:url(#rg);stroke-width:7;stroke-linecap:round;stroke-dasharray:283;stroke-dashoffset:283;animation:ringFill 1.3s 0.5s cubic-bezier(.4,0,.2,1) forwards}
+.ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-pct{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#faf8f4;line-height:1;animation:countUp 0.4s 1.1s ease both;opacity:0;animation-fill-mode:both}
+.ring-lbl{font-family:'JetBrains Mono',monospace;font-size:7px;color:#6a6880;letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
+.conf-badge{display:inline-flex;align-items:center;gap:3px;border-radius:5px;padding:3px 7px;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.05em;white-space:nowrap}
+.cb-high{background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.3);color:#00c896}
+.cb-medium{background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.3);color:#f5a623}
+.cb-low{background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.3);color:#ff8c8c}
+.bstats{display:flex;flex-wrap:wrap;flex:1;min-width:0;gap:0}
+.bs{padding:0 18px;border-right:1px solid rgba(255,255,255,0.07);flex:1;min-width:90px;display:flex;flex-direction:column;justify-content:center}
+.bs:last-child{border-right:none}
+.bs-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.1em;text-transform:uppercase;color:#6a6880;margin-bottom:5px}
+.bs-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:#faf8f4;line-height:1;letter-spacing:-0.03em;animation:countUp 0.4s ease both;opacity:0;animation-fill-mode:both}
+.bs:nth-child(2) .bs-val{animation-delay:0.1s}
+.bs:nth-child(3) .bs-val{animation-delay:0.18s}
+.bs:nth-child(4) .bs-val{animation-delay:0.26s}
+.bs:nth-child(5) .bs-val{animation-delay:0.34s}
+.bs-val.teal{background:linear-gradient(90deg,#00c896,#00e5b0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.bs-val.amber{color:#f5a623}
+.bs-val.red{color:#ff8c8c}
+.bs-sub{font-size:10px;color:#4a4860;margin-top:3px}
+.vp{display:inline-flex;align-items:center;gap:4px;border-radius:5px;padding:3px 7px;margin-top:5px}
+.vp-dot{width:4px;height:4px;border-radius:50%}
+.vp-txt{font-size:9px;font-family:'JetBrains Mono',monospace;letter-spacing:0.04em}
+.vp.green{background:rgba(0,200,150,0.12);border:1px solid rgba(0,200,150,0.25)}.vp.green .vp-dot{background:#00c896}.vp.green .vp-txt{color:#00c896}
+.vp.amber{background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.25)}.vp.amber .vp-dot{background:#f5a623}.vp.amber .vp-txt{color:#f5a623}
+.vp.red{background:rgba(255,107,107,0.1);border:1px solid rgba(255,107,107,0.25)}.vp.red .vp-dot{background:#ff8c8c}.vp.red .vp-txt{color:#ff8c8c}
+
+/* EVIDENCE STRIP */
+.ev-strip{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px;animation:fadeUp 0.4s 0.12s ease both}
+.ev-pill{display:flex;align-items:center;gap:7px;background:var(--white);border:1px solid #ece9e2;border-radius:8px;padding:6px 11px}
+.ev-num{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;line-height:1}
+.ev-num.good{color:var(--green)}
+.ev-num.warn{color:var(--orange)}
+.ev-txt{font-size:11px;color:var(--muted)}
+.ev-title{font-size:11.5px;font-weight:500;color:var(--ink2)}
+
+/* CARDS */
+.card{background:var(--white);border:1px solid #ece9e2;border-radius:var(--rl);padding:18px 20px;transition:transform 0.18s,box-shadow 0.18s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-2px);box-shadow:0 5px 20px rgba(0,0,0,0.05)}
+.card.at::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.card.purple.at::before{background:linear-gradient(90deg,var(--accent),#a78bfa)}
+.card.teal.at::before{background:linear-gradient(90deg,#00b894,#00c896)}
+.card.orange.at::before{background:linear-gradient(90deg,#f08060,#f5a623)}
+.card.red.at::before{background:linear-gradient(90deg,#ff6b6b,#ff8c8c)}
+.card.gold.at::before{background:linear-gradient(90deg,#f5a623,#fbbf24)}
+.sh{display:flex;align-items:center;gap:8px;margin-bottom:13px}
+.sb{width:3px;height:15px;border-radius:2px;flex-shrink:0}
+.st{font-family:'Playfair Display',serif;font-size:0.97rem;font-weight:700;color:var(--ink)}
+.ai-tag{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.1em;text-transform:uppercase;border-radius:4px;padding:2px 7px;margin-bottom:11px}
+.at-p{color:#8c84cc;background:var(--accent-bg);border:1px solid var(--accent-border)}
+.at-p::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--accent)}
+.at-t{color:#0f7a5a;background:#f0fdf7;border:1px solid #b6f0d8}
+.at-t::before{content:'';width:4px;height:4px;border-radius:50%;background:#00b894}
+.ai-txt{font-size:12.5px;color:#4a4862;line-height:1.85;font-weight:300}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.mb{margin-bottom:14px}
+.sec{animation:fadeUp 0.45s ease both}
+
+/* SCORE BREAKDOWN */
+.bd-list{display:flex;flex-direction:column;gap:9px}
+.bd-item{display:flex;flex-direction:column;gap:3px}
+.bd-top{display:flex;justify-content:space-between;align-items:center}
+.bd-lbl{font-size:11.5px;font-weight:500;color:var(--ink2)}
+.bd-sc{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.bd-bg{height:5px;background:#f0eee8;border-radius:3px;overflow:hidden}
+.bd-bar{height:100%;border-radius:3px;animation:barGrow 0.8s ease both}
+.contrib-g{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.contrib-col{display:flex;flex-direction:column;gap:4px}
+.ci{font-size:11.5px;color:#4a4862;display:flex;align-items:flex-start;gap:5px;line-height:1.5}
+.ci-plus{color:var(--green);font-family:'JetBrains Mono',monospace;font-size:9.5px;flex-shrink:0;margin-top:1px}
+.ci-minus{color:var(--orange);font-family:'JetBrains Mono',monospace;font-size:9.5px;flex-shrink:0;margin-top:1px}
+
+/* DEFENSIBILITY */
+.def-box{background:#faf8f4;border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-top:12px;cursor:pointer}
+.def-toggle{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:500;color:var(--ink2)}
+.def-toggle svg{width:13px;height:13px;stroke:var(--subtle);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s}
+.def-toggle.open svg{transform:rotate(180deg)}
+.def-content{display:none;margin-top:9px;font-size:12px;color:var(--muted);line-height:1.75;font-weight:300;border-top:1px solid var(--border);padding-top:9px}
+.def-content.show{display:block}
+
+/* TOP 3 ACTIONS */
+.act-list{display:flex;flex-direction:column;gap:9px}
+.act-card{display:grid;grid-template-columns:30px 1fr;gap:10px;align-items:start;padding:12px;background:#faf8f4;border:1px solid var(--border);border-radius:9px;transition:all 0.18s}
+.act-card:hover{border-color:var(--accent-border);background:var(--accent-bg)}
+.act-num{width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:0.95rem;font-weight:700;color:#fff;flex-shrink:0}
+.act-title{font-size:12.5px;font-weight:500;color:var(--ink2);margin-bottom:3px}
+.act-why{font-size:11.5px;color:var(--orange);margin-bottom:3px;line-height:1.5}
+.act-how{font-size:11.5px;color:var(--muted);line-height:1.5;font-weight:300}
+
+/* PILLS */
+.pill-g{display:flex;flex-wrap:wrap;gap:5px}
+.pill{font-size:11px;padding:4px 10px;border-radius:6px;font-weight:400;opacity:0;animation:popIn 0.3s ease both;animation-fill-mode:both}
+.p-match{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green)}
+.p-crit{background:var(--red-bg);border:1px solid var(--red-border);color:var(--red)}
+.p-imp{background:var(--orange-bg);border:1px solid var(--orange-border);color:var(--orange)}
+.p-opt{background:#f8f7ff;border:1px solid var(--accent-border);color:var(--accent)}
+.tier-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;margin-top:8px}
+.tier-lbl:first-child{margin-top:0}
+
+/* SKILL VALIDATION */
+.sv-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.sv-tbl th{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtle);padding:0 9px 7px 0;text-align:left;font-weight:500}
+.sv-tbl td{padding:7px 9px 7px 0;border-top:1px solid var(--border);color:var(--ink2);vertical-align:top}
+.pb{display:inline-flex;align-items:center;font-size:10px;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace}
+.pb-strong{background:#f0fdf7;color:var(--green);border:1px solid var(--green-border)}
+.pb-moderate{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)}
+.pb-weak{background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border)}
+.pb-none{background:#f5f4f0;color:var(--subtle);border:1px solid var(--border)}
+.sv-rsn{font-size:11px;color:var(--muted);font-weight:300;line-height:1.5;margin-top:1px}
+
+/* EXPERIENCE */
+.dep-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.dep-tbl th{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtle);padding:0 9px 7px 0;text-align:left;font-weight:500}
+.dep-tbl td{padding:7px 9px 7px 0;border-top:1px solid var(--border);color:var(--ink2);vertical-align:top}
+.lv{display:inline-flex;align-items:center;font-size:10px;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace}
+.lv-a{background:#f0fdf7;color:var(--green);border:1px solid var(--green-border)}
+.lv-i{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)}
+.lv-b{background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border)}
+
+/* PROJECTS */
+.proj-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}
+.proj-c{background:#faf8f4;border:1px solid var(--border);border-radius:10px;padding:13px}
+.proj-name{font-size:12px;font-weight:500;color:var(--ink2);margin-bottom:7px;line-height:1.4}
+.proj-scores{display:flex;gap:10px;margin-bottom:7px;flex-wrap:wrap}
+.ps-item{text-align:center}
+.ps-num{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;color:var(--ink);line-height:1}
+.ps-lbl{font-size:9px;color:var(--subtle);font-family:'JetBrains Mono',monospace}
+.proj-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px}
+.pt{font-size:9px;padding:2px 6px;border-radius:3px;font-family:'JetBrains Mono',monospace}
+.pt-yes{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.pt-no{background:#f5f4f0;color:var(--subtle);border:1px solid var(--border)}
+.proj-fb{font-size:11px;color:var(--muted);line-height:1.5;font-weight:300}
+
+/* BENCHMARK */
+.bench-g{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.bench-c{background:#faf8f4;border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center}
+.bench-c.hl{background:var(--accent-bg);border-color:var(--accent-border)}
+.bench-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtle);margin-bottom:6px}
+.bench-val{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--ink)}
+.bench-desc{font-size:10.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+/* RECRUITER */
+.rec-list{display:flex;flex-direction:column;gap:7px}
+.rec-card{display:flex;align-items:flex-start;gap:9px;background:var(--red-bg);border:1px solid var(--red-border);border-radius:9px;padding:11px 13px}
+.rec-icon{width:26px;height:26px;border-radius:6px;background:#fee2e2;border:1px solid var(--red-border);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.rec-icon svg{width:12px;height:12px;stroke:var(--red);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rec-txt{font-size:12px;color:var(--red);line-height:1.6}
+
+/* RISK */
+.risk-g{display:flex;flex-wrap:wrap;gap:6px}
+.risk-p{display:flex;align-items:center;gap:5px;font-size:11px;padding:5px 10px;border-radius:7px;background:#fff5f0;border:1px solid #ffd4be;color:var(--orange)}
+.risk-p svg{width:11px;height:11px;stroke:var(--orange);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+
+/* BEFORE / AFTER */
+.ba-row{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:center}
+.ba-c{background:#faf8f4;border:1px solid var(--border);border-radius:10px;padding:13px;text-align:center}
+.ba-c.after{background:var(--green-bg);border-color:var(--green-border)}
+.ba-lbl{font-size:9px;color:var(--subtle);font-family:'JetBrains Mono',monospace;margin-bottom:4px;letter-spacing:0.06em;text-transform:uppercase}
+.ba-sc{font-family:'Playfair Display',serif;font-size:1.7rem;font-weight:700;color:var(--ink)}
+.ba-sc.green{color:var(--green)}
+.ba-arr{text-align:center;font-size:1.2rem;color:var(--subtle)}
+.ba-delta{font-size:10px;color:var(--green);font-weight:500;margin-top:3px;font-family:'JetBrains Mono',monospace}
+.ba-imprs{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+.ba-impr{font-size:11.5px;color:var(--green);display:flex;align-items:flex-start;gap:5px;line-height:1.5}
+.ba-impr::before{content:'✓';flex-shrink:0;font-weight:500}
+
+/* BULLETS */
+.bul-list{display:flex;flex-direction:column;gap:10px}
+.bul-pair{border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.bul-before{padding:9px 13px;background:#faf8f4;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--muted);line-height:1.7;font-weight:300}
+.bul-after{padding:9px 13px;background:var(--green-bg);font-size:12px;color:#0a5c3e;line-height:1.7;border-left:3px solid var(--green)}
+.b-tag{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;font-weight:500;margin-bottom:3px}
+.bt-b{color:var(--subtle)}
+.bt-a{color:var(--green)}
+
+/* ROADMAP */
+.rm-list{display:flex;flex-direction:column;gap:0}
+.rm-item{display:grid;grid-template-columns:34px 1fr;gap:0}
+.rm-left{display:flex;flex-direction:column;align-items:center;padding-right:13px}
+.rm-circle{width:32px;height:32px;border-radius:50%;background:var(--accent-bg);border:2px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:9.5px;font-weight:500;color:var(--accent);flex-shrink:0}
+.rm-line{width:2px;background:var(--border);flex:1;margin:3px 0}
+.rm-item:last-child .rm-line{display:none}
+.rm-content{padding-bottom:16px}
+.rm-week{font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtle);margin-bottom:2px}
+.rm-focus{font-size:13px;font-weight:500;color:var(--ink2);margin-bottom:2px}
+.rm-task{font-size:12px;color:var(--muted);font-weight:300;line-height:1.6;margin-bottom:2px}
+.rm-outcome{font-size:11px;color:var(--green);font-family:'JetBrains Mono',monospace}
+
+/* RADAR EXPLANATION */
+.re-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:7px;margin-top:10px}
+.re-item{background:#faf8f4;border:1px solid var(--border);border-radius:7px;padding:9px 11px}
+.re-cat{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+.re-txt{font-size:11px;color:var(--muted);line-height:1.5;font-weight:300}
+
+/* COVER */
+.cover-c{background:linear-gradient(135deg,#f6f4ff 0%,#f0fdf9 100%);border:1px solid var(--accent-border);border-radius:var(--rl);padding:20px;position:relative;overflow:hidden}
+.cover-c::after{content:'COVER';position:absolute;right:-8px;top:8px;font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;color:rgba(108,99,255,0.05);pointer-events:none;user-select:none}
+.cover-c .ai-txt{position:relative;z-index:1;color:var(--ink2)}
+.copy-btn{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-family:'JetBrains Mono',monospace;letter-spacing:0.06em;color:var(--subtle);border:1px solid var(--border);border-radius:5px;padding:4px 9px;cursor:pointer;background:transparent;transition:all 0.2s;margin-top:10px}
+.copy-btn:hover{color:var(--accent);border-color:var(--accent-border);background:var(--accent-bg)}
+.copy-btn svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* RESPONSIVE */
+@media (max-width:1024px){.page{padding:20px 16px 60px}}
+@media (max-width:900px){
+  .banner-grid{flex-direction:column}
+  .banner-ring{padding-right:0;border-right:none;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);flex-direction:row;gap:14px;align-items:center}
+  .bstats{gap:8px}
+  .bs{border-right:none;padding:0 10px 0 0;min-width:70px}
+  .g2{grid-template-columns:1fr}
+  .g3{grid-template-columns:1fr 1fr}
+  .bench-g{grid-template-columns:1fr}
+  .contrib-g{grid-template-columns:1fr}
+}
+@media (max-width:620px){
+  .page{padding:14px 12px 50px}
+  .banner{padding:18px 16px}
+  .bs-val{font-size:1.2rem}
+  .g3{grid-template-columns:1fr}
+  .proj-g{grid-template-columns:1fr}
+  .ba-row{grid-template-columns:1fr auto 1fr}
+  .act-card{grid-template-columns:1fr}
+  .act-num{display:none}
+}
+</style>
+
+<div class="blob-wrap"><div class="blob blob-1"></div><div class="blob blob-2"></div></div>
+
+<div class="page">
+  <nav>
+    <div class="logo">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+      <span class="logo-name">ResumeAI</span>
+    </div>
+    <a href="/" class="btn-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>New analysis</a>
+  </nav>
+
+  {% if fixes_applied %}
+  <div class="fixes-bar">
+    <svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    <span>Validation layer applied {{ fixes_applied|length }} consistency fix{{ 'es' if fixes_applied|length != 1 else '' }} — outputs cross-checked for contradictions.</span>
+  </div>
+  {% endif %}
+
+  <svg width="0" height="0" style="position:absolute"><defs><linearGradient id="rg" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#6c63ff"/><stop offset="100%" stop-color="#00c896"/></linearGradient></defs></svg>
+
+  <!-- BANNER -->
+  <div class="banner mb">
+    <div class="banner-grid">
+      <div class="banner-ring">
+        <div class="ring-wrap">
+          <svg viewBox="0 0 100 100">
+            <circle class="ring-bg" cx="50" cy="50" r="45"/>
+            <circle class="ring-fill" cx="50" cy="50" r="45" style="--target:{{ ((1-ats_score/100)*283)|round(1) }}"/>
+          </svg>
+          <div class="ring-inner">
+            <div class="ring-pct">{{ ats_score }}%</div>
+            <div class="ring-lbl">ATS Score</div>
+          </div>
+        </div>
+        <div class="conf-badge cb-{{ confidence.level|lower }}">{{ confidence.level }} confidence</div>
+      </div>
+      <div class="bstats">
+        <div class="bs">
+          <div class="bs-lbl">Job Fit</div>
+          <div class="bs-val {% if job_fit_score>=70 %}teal{% elif job_fit_score>=50 %}amber{% else %}red{% endif %}">{{ job_fit_score }}%</div>
+          <div class="bs-sub">production match</div>
+        </div>
+        <div class="bs">
+          <div class="bs-lbl">Percentile</div>
+          <div class="bs-val">{{ percentile }}<span style="font-size:1rem;color:#4a4860">th</span></div>
+          {% if percentile>=70 %}<div class="vp green"><div class="vp-dot"></div><span class="vp-txt">Top {{ 100-percentile }}%</span></div>
+          {% elif percentile>=40 %}<div class="vp amber"><div class="vp-dot"></div><span class="vp-txt">Mid tier</span></div>
+          {% else %}<div class="vp red"><div class="vp-dot"></div><span class="vp-txt">Needs work</span></div>{% endif %}
+        </div>
+        <div class="bs">
+          <div class="bs-lbl">Shortlist</div>
+          <div class="bs-val {% if benchmark_comparison.shortlist_probability>=60 %}teal{% elif benchmark_comparison.shortlist_probability>=40 %}amber{% else %}red{% endif %}">{{ benchmark_comparison.shortlist_probability }}%</div>
+          <div class="bs-sub">probability</div>
+        </div>
+        <div class="bs">
+          <div class="bs-lbl">Level</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#faf8f4;margin-top:4px;line-height:1.2;position:relative;z-index:1">{{ experience_analysis.total_experience_level }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVIDENCE STRIP -->
+  <div class="ev-strip">
+    {% set ev = evidence_summary %}
+    <div class="ev-pill"><span class="ev-num {% if ev.projects_detected>=2 %}good{% else %}warn{% endif %}">{{ ev.projects_detected }}</span><div><div class="ev-title">Projects</div><div class="ev-txt">detected</div></div></div>
+    <div class="ev-pill"><span class="ev-num {% if ev.projects_with_metrics>=1 %}good{% else %}warn{% endif %}">{{ ev.projects_with_metrics }}</span><div><div class="ev-title">With metrics</div><div class="ev-txt">outcomes</div></div></div>
+    <div class="ev-pill"><span class="ev-num {% if ev.projects_with_deployment>=1 %}good{% else %}warn{% endif %}">{{ ev.projects_with_deployment }}</span><div><div class="ev-title">Deployed</div><div class="ev-txt">projects</div></div></div>
+    <div class="ev-pill"><span class="ev-num {% if ev.github_detected %}good{% else %}warn{% endif %}">{% if ev.github_detected %}✓{% else %}✗{% endif %}</span><div><div class="ev-title">GitHub</div><div class="ev-txt">{% if ev.github_detected %}detected{% else %}not found{% endif %}</div></div></div>
+    <div class="ev-pill"><span class="ev-num" style="color:var(--ink);font-size:0.9rem">{{ ev.tools_detected|length }}</span><div><div class="ev-title">Tools</div><div class="ev-txt">verified</div></div></div>
+    {% if ev.metrics_found %}<div class="ev-pill"><span class="ev-num good" style="font-size:0.85rem">{{ ev.metrics_found[0] }}</span><div><div class="ev-title">Best metric</div><div class="ev-txt">found</div></div></div>{% endif %}
+  </div>
+
+  <!-- TOP 3 ACTIONS + SCORE BREAKDOWN -->
+  <div class="g2 mb sec" style="animation-delay:0.1s">
+    <div class="card at gold">
+      <div class="sh"><div class="sb" style="background:#f5a623"></div><div class="st">Top 3 actions to improve</div></div>
+      <div class="act-list">
+        {% for a in top_3_actions %}
+        <div class="act-card">
+          <div class="act-num">{{ a.priority }}</div>
+          <div><div class="act-title">{{ a.action }}</div><div class="act-why">Why: {{ a.why }}</div><div class="act-how">How: {{ a.how }}</div></div>
+        </div>
+        {% else %}
+        <div style="font-size:12.5px;color:var(--subtle)">Review other sections for improvement areas.</div>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="card at purple">
+      <div class="sh"><div class="sb" style="background:var(--accent)"></div><div class="st">Score breakdown</div></div>
+      <div class="bd-list">
+        {% set bd=score_breakdown %}
+        {% for lbl,sc,mx,col in [("Skills match",bd.skills_match,30,"#6c63ff"),("Experience depth",bd.experience_depth,25,"#00b894"),("Projects quality",bd.projects_quality,15,"#f08060"),("Tools & stack",bd.tools_tech_stack,10,"#1d4ed8"),("Resume quality",bd.resume_quality,10,"#8b5cf6"),("Proof of work",bd.proof_of_work,10,"#f5a623")] %}
+        <div class="bd-item">
+          <div class="bd-top"><span class="bd-lbl">{{ lbl }}</span><span class="bd-sc">{{ sc|round(1) }} / {{ mx }}</span></div>
+          <div class="bd-bg"><div class="bd-bar" style="--w:{{ (sc/mx*100)|round }}%;width:0;background:{{ col }};animation-delay:{{ loop.index0*0.07 }}s"></div></div>
+        </div>
+        {% endfor %}
+      </div>
+      <div class="contrib-g">
+        <div class="contrib-col">{% for i in score_contributors.positive %}<div class="ci"><span class="ci-plus">+</span>{{ i }}</div>{% endfor %}</div>
+        <div class="contrib-col">{% for i in score_contributors.negative %}<div class="ci"><span class="ci-minus">−</span>{{ i }}</div>{% endfor %}</div>
+      </div>
+      <div class="def-box" onclick="toggleDef(this)">
+        <div class="def-toggle"><span>Why this exact score?</span><svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg></div>
+        <div class="def-content">{{ score_defensibility }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- OVERALL FEEDBACK -->
+  <div class="card at purple mb sec" style="animation-delay:0.14s">
+    <div class="ai-tag at-p">LLaMA-3.3-70b · Evidence-based</div>
+    <div class="sh" style="margin-bottom:9px"><div class="sb" style="background:var(--accent)"></div><div class="st">Overall assessment</div></div>
+    <div class="ai-txt">{{ overall_feedback }}</div>
+    <div style="margin-top:8px;font-size:11.5px;color:var(--subtle);font-style:italic">Confidence: {{ confidence.level }} — {{ confidence.reason }}</div>
+  </div>
+
+  <!-- SKILLS -->
+  <div class="g2 mb sec" style="animation-delay:0.17s">
+    <div class="card">
+      <div class="sh"><div class="sb" style="background:var(--green)"></div><div class="st">Matched skills</div></div>
+      <div class="pill-g">
+        {% for s in matched_skills %}<span class="pill p-match" style="animation-delay:{{ loop.index0*0.025 }}s">{{ s }}</span>{% endfor %}
+        {% if not matched_skills %}<span style="font-size:12.5px;color:var(--subtle)">No skills matched.</span>{% endif %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="sh"><div class="sb" style="background:#f08060"></div><div class="st">Missing skills</div></div>
+      {% if missing_skills.critical %}<div class="tier-lbl" style="color:var(--red)">Critical</div><div class="pill-g mb">{% for s in missing_skills.critical %}<span class="pill p-crit">{{ s }}</span>{% endfor %}</div>{% endif %}
+      {% if missing_skills.important %}<div class="tier-lbl" style="color:var(--orange)">Important</div><div class="pill-g mb">{% for s in missing_skills.important %}<span class="pill p-imp">{{ s }}</span>{% endfor %}</div>{% endif %}
+      {% if missing_skills.optional %}<div class="tier-lbl" style="color:var(--accent)">Optional</div><div class="pill-g">{% for s in missing_skills.optional %}<span class="pill p-opt">{{ s }}</span>{% endfor %}</div>{% endif %}
+      {% if not missing_skills.critical and not missing_skills.important and not missing_skills.optional %}<span style="font-size:12.5px;color:var(--green)">No critical gaps found.</span>{% endif %}
+    </div>
+  </div>
+
+  <!-- RADAR CHART -->
+  <div class="card mb sec" style="animation-delay:0.2s;padding:18px 20px">
+    <div class="sh"><div class="sb" style="background:#00b894"></div><div class="st">Skill coverage radar</div></div>
+    <div id="radarChart" style="height:380px"></div>
+    {% if radar_explanation %}
+    <div class="re-g">
+      {% for cat,exp in radar_explanation.items() %}<div class="re-item"><div class="re-cat">{{ cat }}</div><div class="re-txt">{{ exp }}</div></div>{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- SKILL VALIDATION -->
+  {% if skill_validation %}
+  <div class="card at teal mb sec" style="animation-delay:0.22s">
+    <div class="sh"><div class="sb" style="background:#00b894"></div><div class="st">Skill validation — proof check</div></div>
+    <table class="sv-tbl">
+      <tr><th>Skill</th><th>Listed</th><th>Evidenced</th><th>Proof</th><th>Reason</th></tr>
+      {% for sv in skill_validation %}
+      <tr>
+        <td style="font-weight:500;color:var(--ink)">{{ sv.skill }}</td>
+        <td>{% if sv.listed %}<span style="color:var(--green)">✓</span>{% else %}<span style="color:var(--subtle)">✗</span>{% endif %}</td>
+        <td>{% if sv.evidenced %}<span style="color:var(--green)">✓</span>{% else %}<span style="color:var(--orange)">✗</span>{% endif %}</td>
+        <td><span class="pb pb-{{ sv.proof_strength|lower }}">{{ sv.proof_strength }}</span></td>
+        <td><div class="sv-rsn">{{ sv.reason }}</div></td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- EXPERIENCE DEPTH -->
+  {% if experience_analysis.skills_depth %}
+  <div class="card at teal mb sec" style="animation-delay:0.24s">
+    <div class="sh"><div class="sb" style="background:#00b894"></div><div class="st">Experience depth per skill</div></div>
+    <table class="dep-tbl">
+      <tr><th>Skill</th><th>Level</th><th>Reason</th><th style="text-align:center">Metrics</th></tr>
+      {% for item in experience_analysis.skills_depth %}
+      <tr>
+        <td style="font-weight:500;color:var(--ink)">{{ item.skill }}</td>
+        <td><span class="lv {% if item.level=='Advanced' %}lv-a{% elif item.level=='Intermediate' %}lv-i{% else %}lv-b{% endif %}">{{ item.level }}</span></td>
+        <td><div class="sv-rsn">{{ item.reason }}</div></td>
+        <td style="text-align:center">{% if item.has_metrics %}✅{% else %}⬜{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  {% endif %}
+
+  <!-- PROJECT ANALYSIS -->
+  {% if project_analysis %}
+  <div class="card at orange mb sec" style="animation-delay:0.26s">
+    <div class="sh"><div class="sb" style="background:#f08060"></div><div class="st">Project quality analysis</div></div>
+    <div class="proj-g">
+      {% for p in project_analysis %}
+      <div class="proj-c">
+        <div class="proj-name">{{ p.name }}</div>
+        <div class="proj-scores">
+          <div class="ps-item"><div class="ps-num">{{ p.score }}<span style="font-size:0.85rem;color:var(--subtle)">/10</span></div><div class="ps-lbl">Overall</div></div>
+          {% if p.production_readiness_score is defined %}<div class="ps-item"><div class="ps-num" style="color:{% if p.production_readiness_score>=7 %}var(--green){% elif p.production_readiness_score>=4 %}var(--orange){% else %}var(--red){% endif %}">{{ p.production_readiness_score }}<span style="font-size:0.85rem;color:var(--subtle)">/10</span></div><div class="ps-lbl">Prod</div></div>{% endif %}
+          {% if p.impact_score is defined %}<div class="ps-item"><div class="ps-num" style="color:var(--accent)">{{ p.impact_score }}<span style="font-size:0.85rem;color:var(--subtle)">/10</span></div><div class="ps-lbl">Impact</div></div>{% endif %}
+        </div>
+        <div class="proj-tags">
+          <span class="pt {% if p.has_deployment %}pt-yes{% else %}pt-no{% endif %}">{% if p.has_deployment %}✓{% else %}✗{% endif %} Deployed</span>
+          <span class="pt {% if p.has_metrics %}pt-yes{% else %}pt-no{% endif %}">{% if p.has_metrics %}✓{% else %}✗{% endif %} Metrics</span>
+          <span class="pt {% if p.real_world_relevance=='High' %}pt-yes{% else %}pt-no{% endif %}">{{ p.real_world_relevance }}</span>
+        </div>
+        <div class="proj-fb">{{ p.feedback }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- BENCHMARK + RISK -->
+  <div class="g2 mb sec" style="animation-delay:0.28s">
+    <div class="card">
+      <div class="sh"><div class="sb" style="background:#1d4ed8"></div><div class="st">Market benchmark</div></div>
+      <div class="bench-g">
+        <div class="bench-c"><div class="bench-lbl">Avg candidate</div><div class="bench-desc" style="margin-top:4px;font-size:11.5px">{{ benchmark_comparison.vs_average_candidate }}</div></div>
+        <div class="bench-c hl"><div class="bench-lbl">You</div><div class="bench-val">{{ percentile }}<span style="font-size:1rem">th</span></div></div>
+        <div class="bench-c"><div class="bench-lbl">Top 10%</div><div class="bench-desc" style="margin-top:4px;font-size:11.5px">{{ benchmark_comparison.vs_top_10_percent }}</div></div>
+      </div>
+    </div>
+    {% if risk_flags %}
+    <div class="card">
+      <div class="sh"><div class="sb" style="background:#f5a623"></div><div class="st">Resume risk flags</div></div>
+      <div class="risk-g">
+        {% for flag in risk_flags %}<div class="risk-p"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ flag }}</div>{% endfor %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- RECRUITER -->
+  {% if recruiter_feedback %}
+  <div class="card at red mb sec" style="animation-delay:0.3s">
+    <div class="ai-tag at-p">Recruiter simulation · decisive mode</div>
+    <div class="sh" style="margin-bottom:11px"><div class="sb" style="background:#ff6b6b"></div><div class="st">Likely rejection reasons</div></div>
+    <div class="rec-list">
+      {% for r in recruiter_feedback %}
+      <div class="rec-card">
+        <div class="rec-icon"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+        <div class="rec-txt">{{ r }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- BEFORE / AFTER -->
+  {% if before_after %}
+  <div class="card mb sec" style="animation-delay:0.32s">
+    <div class="sh"><div class="sb" style="background:var(--green)"></div><div class="st">Before vs after improvements</div></div>
+    <div class="ba-row">
+      <div class="ba-c"><div class="ba-lbl">Current ATS</div><div class="ba-sc">{{ before_after.ats_score_before|round }}%</div></div>
+      <div class="ba-arr">→</div>
+      <div class="ba-c after"><div class="ba-lbl">After fixes</div><div class="ba-sc green">{{ before_after.ats_score_after|round }}%</div><div class="ba-delta">+{{ (before_after.ats_score_after-before_after.ats_score_before)|round }}pts</div></div>
+    </div>
+    {% if before_after.key_improvements %}
+    <div class="ba-imprs">{% for i in before_after.key_improvements %}<div class="ba-impr">{{ i }}</div>{% endfor %}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- IMPROVED BULLETS -->
+  {% if improved_bullets %}
+  <div class="card at purple mb sec" style="animation-delay:0.34s">
+    <div class="ai-tag at-p">AI rewritten</div>
+    <div class="sh" style="margin-bottom:12px"><div class="sb" style="background:var(--accent)"></div><div class="st">Improved bullet points</div></div>
+    <div class="bul-list">
+      {% for bul in improved_bullets %}
+      {% if '|' in bul %}{% set parts=bul.split('|') %}
+      <div class="bul-pair">
+        <div class="bul-before"><div class="b-tag bt-b">Before</div>{{ parts[0].replace('BEFORE:','').strip() }}</div>
+        <div class="bul-after"><div class="b-tag bt-a">After</div>{{ parts[1].replace('AFTER:','').strip() }}</div>
+      </div>
+      {% else %}
+      <div class="bul-pair"><div class="bul-after" style="border-left:3px solid var(--accent);background:var(--accent-bg)"><div class="b-tag" style="color:var(--accent)">Improved</div>{{ bul }}</div></div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ROADMAP -->
+  {% if learning_roadmap %}
+  <div class="card at teal mb sec" style="animation-delay:0.36s">
+    <div class="sh"><div class="sb" style="background:#00b894"></div><div class="st">Week-by-week execution roadmap</div></div>
+    <div class="rm-list">
+      {% for w in learning_roadmap %}
+      <div class="rm-item">
+        <div class="rm-left"><div class="rm-circle">W{{ w.week }}</div><div class="rm-line"></div></div>
+        <div class="rm-content">
+          <div class="rm-week">Week {{ w.week }}</div>
+          <div class="rm-focus">{{ w.focus }}</div>
+          <div class="rm-task">{{ w.task }}</div>
+          <div class="rm-outcome">→ {{ w.outcome }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- COVER NOTE -->
+  {% if cover_note %}
+  <div class="sec" style="animation-delay:0.38s">
+    <div class="cover-c">
+      <div class="ai-tag at-t">AI generated · edit before use</div>
+      <div class="sh" style="margin-bottom:11px"><div class="sb" style="background:#00b894"></div><div class="st">Cover note</div></div>
+      <div class="ai-txt" id="coverText">{{ cover_note }}</div>
+      <button class="copy-btn" onclick="copyText('coverText',this)">
+        <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy to clipboard
+      </button>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+try{
+  const raw={{ chart_json }};
+  if(raw&&raw.data){
+    Plotly.react('radarChart',raw.data,Object.assign({},raw.layout,{
+      paper_bgcolor:'rgba(0,0,0,0)',plot_bgcolor:'rgba(0,0,0,0)',
+      font:{family:'DM Sans, sans-serif'},
+      margin:{t:25,b:45,l:25,r:25},
+      polar:{bgcolor:'rgba(0,0,0,0)',
+        radialaxis:{visible:true,range:[0,100],ticksuffix:'%',tickfont:{size:9,color:'#b0aec0'},gridcolor:'rgba(180,175,190,0.22)',linecolor:'rgba(180,175,190,0.22)'},
+        angularaxis:{tickfont:{size:10.5,color:'#4a4862'},gridcolor:'rgba(180,175,190,0.18)'}},
+      legend:{orientation:'h',y:-0.14,xanchor:'center',x:0.5,font:{size:10.5,color:'#7a7890'}},
+      height:380
+    }),{responsive:true,displayModeBar:false});
+  }
+}catch(e){
+  document.getElementById('radarChart').innerHTML='<div style="height:120px;display:flex;align-items:center;justify-content:center;color:#b0aec0;font-family:JetBrains Mono,monospace;font-size:11px">Chart unavailable</div>';
+}
+function toggleDef(box){
+  const c=box.querySelector('.def-content'),t=box.querySelector('.def-toggle');
+  c.classList.toggle('show');t.classList.toggle('open');
+}
+function copyText(id,btn){
+  navigator.clipboard.writeText(document.getElementById(id).innerText).then(()=>{
+    const o=btn.innerHTML;
+    btn.innerHTML='<svg viewBox="0 0 24 24" style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    btn.style.color='#0d7a52';btn.style.borderColor='#b6f0d8';btn.style.background='#f0fdf7';
+    setTimeout(()=>{btn.innerHTML=o;btn.style.color='';btn.style.borderColor='';btn.style.background=''},2000);
+  });
+}
+</script>
