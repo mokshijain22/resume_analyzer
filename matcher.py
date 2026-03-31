@@ -11,7 +11,53 @@ import time
 import hashlib
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
-from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+
+def compute_ats_score(resume_text, jd_text):
+    try:
+        if not resume_text or not jd_text:
+            return {
+                "score": 0,
+                "matched_keywords": [],
+                "missing_keywords": []
+            }
+
+        # Combine texts
+        documents = [resume_text, jd_text]
+
+        # TF-IDF Vectorization
+        vectorizer = TfidfVectorizer(stop_words='english')
+        tfidf_matrix = vectorizer.fit_transform(documents)
+
+        # Cosine similarity
+        similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+
+        # Convert to percentage
+        score = round(similarity * 100, 2)
+
+        # Keyword extraction
+        feature_names = vectorizer.get_feature_names_out()
+
+        resume_words = set(resume_text.lower().split())
+        jd_words = set(jd_text.lower().split())
+
+        matched = list(resume_words & jd_words)
+        missing = list(jd_words - resume_words)
+
+        return {
+            "score": score,
+            "matched_keywords": matched[:20],
+            "missing_keywords": missing[:20]
+        }
+
+    except Exception as e:
+        print("ATS ERROR:", e)
+        return {
+            "score": 0,
+            "matched_keywords": [],
+            "missing_keywords": []
+        }
 
 # ── SINGLETON MODEL — loads once, reused forever ──────────────────────────────
 _MODEL: SentenceTransformer | None = None
@@ -22,7 +68,7 @@ def _get_model() -> SentenceTransformer:
     if _MODEL is None:
         t0 = time.time()
         print("[matcher] Loading sentence-transformer model...", flush=True)
-        _MODEL = SentenceTransformer("all-MiniLM-L6-v2")
+        
         print(f"[matcher] Model ready in {time.time()-t0:.2f}s", flush=True)
     return _MODEL
 
