@@ -276,7 +276,8 @@ if(jd) jd.addEventListener('input',()=>{cc.textContent=jd.value.length+' chars'}
 dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over')});
 dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
 dz.addEventListener('drop',e=>{
-  e.preventDefault();dz.classList.remove('drag-over');
+//   e.preventDefault();
+  dz.classList.remove('drag-over');
   const f=e.dataTransfer.files[0];
   if(f&&(f.name.endsWith('.pdf')||f.name.endsWith('.docx'))){const dt=new DataTransfer();dt.items.add(f);fi.files=dt.files;showFile(f.name);}
   else if(f){showClientError('Only PDF and DOCX files are supported.');}
@@ -309,6 +310,8 @@ function loadSample(role){
   setTimeout(()=>{jd.style.borderColor='';jd.style.boxShadow=''},1500);
 }
 form.addEventListener('submit',e=>{
+  console.log("Submitting form...");
+  console.log("Files:", fi.files);
   err.className='error-msg';
   if(!fi.files.length){e.preventDefault();showClientError('Please upload your resume (PDF or DOCX).');return}
   startLoading();
