@@ -1,10 +1,6 @@
 """
-gemini_analyzer.py — Fixed Groq analyzer.
-Key fixes:
-  - Prompt produces MUCH smaller JSON (was hitting token limit mid-response)
-  - max_tokens raised to 2048 with temperature 0.3
-  - Fallback extracts partial data if JSON is incomplete
-  - All fields have safe defaults
+gemini_analyzer.py — Full Groq analyzer with sentence-transformers backend.
+Uses flat JSON prompt to prevent LLM response truncation.
 """
 import os
 import json
@@ -24,14 +20,13 @@ MARKET_PROFILES = {
 
 
 def analyze_resume(resume_text: str, jd_text: str = "", role: str = "") -> dict:
-    mode   = "with_jd" if jd_text.strip() else "without_jd"
-    target = jd_text.strip()[:800] if mode == "with_jd" else MARKET_PROFILES.get(role, MARKET_PROFILES["ML Engineer"])
-    resume = resume_text.strip()[:2000]
+    mode       = "with_jd" if jd_text.strip() else "without_jd"
+    target     = jd_text.strip()[:800] if mode == "with_jd" else MARKET_PROFILES.get(role, MARKET_PROFILES["ML Engineer"])
+    resume     = resume_text.strip()[:2000]
     role_label = role or "ML Engineer"
 
     t0 = time.time()
 
-    # ── Compact prompt — strict JSON, minimal fields to avoid truncation ──────
     prompt = f"""You are a senior hiring manager. Analyze this resume against the {"job description" if mode=="with_jd" else f"{role_label} market profile"}.
 
 RESUME:
@@ -40,72 +35,72 @@ RESUME:
 {"JOB DESCRIPTION" if mode=="with_jd" else "MARKET PROFILE"}:
 {target}
 
-Return ONLY valid compact JSON. No markdown. No explanation. No extra text before or after.
-Every string value must be SHORT (under 100 chars). Arrays max 4 items each.
+Return ONLY valid compact JSON. No markdown. No explanation. No text before or after the JSON.
+Keep every string value under 120 characters. Arrays max 4 items each.
 
 {{
   "confidence_level": "High or Medium or Low",
-  "confidence_reason": "one short sentence why",
+  "confidence_reason": "one short sentence",
   "ats_score": <number 0-100>,
-  "score_defensibility": "short explanation of score with 2-3 specific reasons",
+  "score_defensibility": "why this exact score with 2-3 evidence-based reasons",
   "skills_match": <0-30>,
   "experience_depth": <0-25>,
   "projects_quality": <0-15>,
   "tools_tech_stack": <0-10>,
   "resume_quality": <0-10>,
   "proof_of_work": <0-10>,
-  "positive_contributors": ["reason 1", "reason 2"],
-  "negative_contributors": ["reason 1", "reason 2"],
+  "positive_contributors": ["evidence-backed positive reason"],
+  "negative_contributors": ["evidence-backed penalty reason"],
   "projects_detected": <int>,
   "projects_with_metrics": <int>,
   "projects_with_deployment": <int>,
   "tools_detected": ["tool1", "tool2", "tool3"],
-  "metrics_found": ["metric1"],
+  "metrics_found": ["e.g. 94% accuracy"],
   "github_detected": <true or false>,
-  "evidence_summary": "one sentence describing what was found in resume",
+  "evidence_summary": "one sentence: X projects, Y deployed, Z with metrics",
   "job_fit_score": <0-100>,
   "percentile": <0-100>,
   "matched_skills": ["skill1", "skill2", "skill3", "skill4"],
-  "critical_missing": ["skill1", "skill2"],
-  "important_missing": ["skill1", "skill2"],
-  "optional_missing": ["skill1"],
+  "critical_missing": ["must-have skill missing"],
+  "important_missing": ["important skill missing"],
+  "optional_missing": ["optional skill missing"],
   "experience_level": "Fresher or Junior or Mid or Senior",
   "skills_depth": [
-    {{"skill": "Python", "level": "Intermediate", "reason": "used in 2 projects", "has_metrics": false}}
+    {{"skill": "Python", "level": "Intermediate", "reason": "used in 2 projects with APIs", "has_metrics": false}}
   ],
   "has_deployed_projects": <true or false>,
   "has_metrics": <true or false>,
   "project_analysis": [
-    {{"name": "project name", "score": <0-10>, "prod_score": <0-10>, "deployed": <bool>, "has_metrics": <bool>, "feedback": "short feedback"}}
+    {{"name": "project name", "score": <0-10>, "prod_score": <0-10>, "deployed": <bool>, "has_metrics": <bool>, "feedback": "short honest feedback"}}
   ],
-  "vs_average": "one sentence comparison to average candidate",
-  "vs_top_10": "one sentence comparison to top 10 percent",
+  "vs_average": "one sentence vs average candidate",
+  "vs_top_10": "one sentence vs top 10 percent",
   "shortlist_probability": <0-100>,
-  "recruiter_feedback": ["specific rejection reason 1", "specific rejection reason 2"],
-  "risk_flags": ["flag 1", "flag 2"],
-  "action_1_title": "action title",
-  "action_1_why": "why this action",
-  "action_1_how": "how to do it referencing their projects",
-  "action_2_title": "action title",
-  "action_2_why": "why",
-  "action_2_how": "how",
-  "action_3_title": "action title",
-  "action_3_why": "why",
-  "action_3_how": "how",
-  "overall_feedback": "3 sentences max evidence-based summary",
-  "bullet_before_1": "original weak bullet",
-  "bullet_after_1": "improved metric-driven version",
+  "recruiter_feedback": ["decisive rejection reason referencing actual resume gaps"],
+  "risk_flags": ["specific flag with evidence"],
+  "action_1_title": "specific action title",
+  "action_1_why": "evidence-backed reason from resume",
+  "action_1_how": "execution step referencing their actual projects",
+  "action_2_title": "specific action title",
+  "action_2_why": "evidence-backed reason",
+  "action_2_how": "execution step",
+  "action_3_title": "specific action title",
+  "action_3_why": "evidence-backed reason",
+  "action_3_how": "execution step",
+  "overall_feedback": "3 sentences max evidence-based summary referencing specific projects",
+  "bullet_before_1": "original weak bullet from resume",
+  "bullet_after_1": "improved metric-driven ATS-optimized version",
   "bullet_before_2": "original weak bullet",
   "bullet_after_2": "improved version",
   "ats_before": <current score>,
-  "ats_after": <projected score after fixes, max +20>,
+  "ats_after": <projected after top 3 actions, max +20pts>,
   "coverage_before": <0-100>,
   "coverage_after": <0-100>,
-  "week1_focus": "topic", "week1_task": "specific task referencing their project", "week1_outcome": "deliverable",
+  "week1_focus": "topic", "week1_task": "specific task referencing their actual project", "week1_outcome": "concrete deliverable",
   "week2_focus": "topic", "week2_task": "specific task", "week2_outcome": "deliverable",
   "week3_focus": "topic", "week3_task": "specific task", "week3_outcome": "deliverable",
   "week4_focus": "topic", "week4_task": "specific task", "week4_outcome": "deliverable",
-  "cover_note": "2 sentence cover note referencing actual projects"
+  "cover_note": "2 sentences referencing actual projects and the specific role"
 }}"""
 
     try:
@@ -119,7 +114,6 @@ Every string value must be SHORT (under 100 chars). Arrays max 4 items each.
         raw = response.choices[0].message.content.strip()
         print(f"[groq] {elapsed}ms, {len(raw)} chars, tokens={response.usage.total_tokens}", flush=True)
 
-        # Strip markdown fences if present
         raw = re.sub(r"^```(?:json)?", "", raw).strip()
         raw = re.sub(r"```$",          "", raw).strip()
 
@@ -127,38 +121,31 @@ Every string value must be SHORT (under 100 chars). Arrays max 4 items each.
         return _build_result(data, mode)
 
     except json.JSONDecodeError as e:
-        print(f"[groq] JSON error: {e} — attempting partial recovery", flush=True)
-        # Try to recover partial JSON by truncating at last complete field
+        print(f"[groq] JSON error at char {e.pos}: {e.msg} — attempting recovery", flush=True)
         if 'raw' in dir():
-            partial = _recover_partial_json(raw)
+            partial = _recover_partial(raw)
             if partial:
+                print("[groq] Partial recovery succeeded", flush=True)
                 return _build_result(partial, mode)
-        return _fallback(mode, f"JSON parse error — please retry")
+        return _fallback(mode, "JSON parse error — please retry")
 
     except Exception as e:
         print(f"[groq] API error: {e}", flush=True)
         return _fallback(mode, str(e)[:80])
 
 
-def _recover_partial_json(raw: str) -> dict | None:
-    """Try to close truncated JSON by finding last complete key-value pair."""
-    try:
-        # Find the last complete string value or number
-        truncated = raw.rstrip()
-        # Try adding closing brace
-        for suffix in ["}", '"}', '"}}', '}}}']:
-            try:
-                return json.loads(truncated + suffix)
-            except Exception:
-                pass
-        return None
-    except Exception:
-        return None
+def _recover_partial(raw: str) -> dict | None:
+    """Try to salvage truncated JSON."""
+    for suffix in ["}", '"}', '"}}']:
+        try:
+            return json.loads(raw.rstrip() + suffix)
+        except Exception:
+            pass
+    return None
 
 
 def _build_result(d: dict, mode: str) -> dict:
-    """Convert flat Groq response dict into the nested structure the template expects."""
-
+    """Convert flat Groq response into nested structure for templates."""
     def sg(k, default):
         v = d.get(k, default)
         return v if v is not None else default
@@ -167,7 +154,7 @@ def _build_result(d: dict, mode: str) -> dict:
         v = d.get(k, [])
         return v if isinstance(v, list) else []
 
-    # Build improved bullets
+    # Improved bullets
     improved_bullets = []
     for i in range(1, 4):
         before = sg(f"bullet_before_{i}", "")
@@ -177,7 +164,7 @@ def _build_result(d: dict, mode: str) -> dict:
         elif after:
             improved_bullets.append(after)
 
-    # Build roadmap
+    # Roadmap
     roadmap = []
     for w in range(1, 5):
         focus   = sg(f"week{w}_focus",   "")
@@ -186,7 +173,7 @@ def _build_result(d: dict, mode: str) -> dict:
         if focus and task:
             roadmap.append({"week": w, "focus": focus, "task": task, "outcome": outcome})
 
-    # Build top 3 actions
+    # Top 3 actions
     top_3 = []
     for i in range(1, 4):
         title = sg(f"action_{i}_title", "")
@@ -195,27 +182,25 @@ def _build_result(d: dict, mode: str) -> dict:
         if title:
             top_3.append({"priority": i, "action": title, "why": why, "how": how})
 
-    # Build project analysis
-    proj_raw = sgl("project_analysis")
+    # Project analysis
     projects = []
-    for p in proj_raw[:4]:
+    for p in sgl("project_analysis")[:4]:
         if isinstance(p, dict):
             projects.append({
-                "name":                    str(p.get("name", "Project")),
-                "score":                   float(p.get("score", 5)),
+                "name":                       str(p.get("name", "Project")),
+                "score":                      float(p.get("score", 5)),
                 "production_readiness_score": float(p.get("prod_score", 5)),
-                "impact_score":            float(p.get("score", 5)),
-                "has_deployment":          bool(p.get("deployed", False)),
-                "has_metrics":             bool(p.get("has_metrics", False)),
-                "real_world_relevance":    "Medium",
-                "tech_stack_depth":        "Moderate",
-                "feedback":                str(p.get("feedback", "")),
+                "impact_score":               float(p.get("score", 5)),
+                "has_deployment":             bool(p.get("deployed", False)),
+                "has_metrics":                bool(p.get("has_metrics", False)),
+                "real_world_relevance":       "Medium",
+                "tech_stack_depth":           "Moderate",
+                "feedback":                   str(p.get("feedback", "")),
             })
 
-    # Build skills_depth
-    depth_raw = sgl("skills_depth")
+    # Skills depth
     skills_depth = []
-    for s in depth_raw[:6]:
+    for s in sgl("skills_depth")[:6]:
         if isinstance(s, dict):
             skills_depth.append({
                 "skill":       str(s.get("skill", "")),
@@ -225,16 +210,14 @@ def _build_result(d: dict, mode: str) -> dict:
             })
 
     ats = float(sg("ats_score", 50))
-    ats_before = float(sg("ats_before", ats))
-    ats_after  = min(float(sg("ats_after", ats + 10)), 97)
 
     return {
-        "mode":    mode,
+        "mode": mode,
         "confidence": {
             "level":  str(sg("confidence_level", "Medium")),
             "reason": str(sg("confidence_reason", "Analysis complete.")),
         },
-        "ats_score":          ats,
+        "ats_score":           ats,
         "score_defensibility": str(sg("score_defensibility", "")),
         "score_breakdown": {
             "skills_match":     float(sg("skills_match",     0)),
@@ -266,17 +249,17 @@ def _build_result(d: dict, mode: str) -> dict:
             "important": sgl("important_missing"),
             "optional":  sgl("optional_missing"),
         },
-        "skill_validation": [],   # skipped to save tokens
+        "skill_validation": [],
         "experience_analysis": {
             "total_experience_level": str(sg("experience_level", "Junior")),
             "skills_depth": skills_depth,
         },
         "proof_of_skill": {
-            "has_deployed_projects":  bool(sg("has_deployed_projects",  False)),
-            "has_live_links":         bool(sg("github_detected",        False)),
-            "has_metrics":            bool(sg("has_metrics",            False)),
+            "has_deployed_projects":   bool(sg("has_deployed_projects", False)),
+            "has_live_links":          bool(sg("github_detected",       False)),
+            "has_metrics":             bool(sg("has_metrics",           False)),
             "has_real_world_datasets": False,
-            "summary":                str(sg("evidence_summary", "")),
+            "summary":                 str(sg("evidence_summary", "")),
         },
         "project_analysis": projects,
         "benchmark_comparison": {
@@ -284,17 +267,17 @@ def _build_result(d: dict, mode: str) -> dict:
             "vs_top_10_percent":    str(sg("vs_top_10",  "")),
             "shortlist_probability": int(sg("shortlist_probability", 40)),
         },
-        "recruiter_feedback":   sgl("recruiter_feedback"),
-        "risk_flags":           sgl("risk_flags"),
-        "radar_explanation":    {},
-        "top_3_actions":        top_3,
-        "overall_feedback":     str(sg("overall_feedback", "")),
-        "improved_bullets":     improved_bullets,
+        "recruiter_feedback": sgl("recruiter_feedback"),
+        "risk_flags":         sgl("risk_flags"),
+        "radar_explanation":  {},
+        "top_3_actions":      top_3,
+        "overall_feedback":   str(sg("overall_feedback", "")),
+        "improved_bullets":   improved_bullets,
         "before_after_comparison": {
-            "ats_score_before":      ats_before,
-            "ats_score_after":       ats_after,
-            "skill_coverage_before": float(sg("coverage_before", 50)),
-            "skill_coverage_after":  float(sg("coverage_after",  65)),
+            "ats_score_before":      float(sg("ats_before",       ats)),
+            "ats_score_after":       min(float(sg("ats_after",    ats + 10)), 97),
+            "skill_coverage_before": float(sg("coverage_before",  50)),
+            "skill_coverage_after":  float(sg("coverage_after",   65)),
             "key_improvements":      [],
         },
         "learning_roadmap": roadmap,
@@ -310,8 +293,7 @@ def _fallback(mode: str, detail: str = "") -> dict:
         "score_breakdown": {"skills_match":0,"experience_depth":0,"projects_quality":0,"tools_tech_stack":0,"resume_quality":0,"proof_of_work":0},
         "score_contributors": {"positive":[],"negative":[]},
         "evidence_summary": {"projects_detected":0,"projects_with_metrics":0,"projects_with_deployment":0,"tools_detected":[],"metrics_found":[],"links_detected":False,"github_detected":False,"summary":""},
-        "job_fit_score":0,"percentile":0,
-        "matched_skills":[],"missing_skills":{"critical":[],"important":[],"optional":[]},
+        "job_fit_score":0,"percentile":0,"matched_skills":[],"missing_skills":{"critical":[],"important":[],"optional":[]},
         "skill_validation":[],"experience_analysis":{"total_experience_level":"Unknown","skills_depth":[]},
         "proof_of_skill":{"has_deployed_projects":False,"has_live_links":False,"has_metrics":False,"has_real_world_datasets":False,"summary":""},
         "project_analysis":[],"benchmark_comparison":{"vs_average_candidate":"","vs_top_10_percent":"","shortlist_probability":0},
@@ -336,4 +318,4 @@ if __name__ == "__main__":
     print(f"Done in {time.time()-t0:.1f}s")
     print(f"ATS: {r['ats_score']} | Confidence: {r['confidence']['level']}")
     print(f"Feedback: {r['overall_feedback'][:100]}")
-    print(f"Roadmap weeks: {len(r['learning_roadmap'])}")
+    print(f"Roadmap: {len(r['learning_roadmap'])} weeks")

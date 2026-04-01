@@ -1,12 +1,6 @@
 """
-app.py — Fixed Flask app.
-Fixes:
-  - ATS score from matcher now correctly shown (was being overwritten to 0)
-  - Uses resume_parser.py (not parser.py)
-  - Parallel execution for speed
-  - Cache module wrapped in try/except (non-fatal)
-  - Validator wrapped in try/except (non-fatal)
-  - All template vars have safe defaults
+app.py — Full production Flask app with sentence-transformers.
+For servers with >2GB RAM (not Render free tier).
 """
 import os
 import time
@@ -94,15 +88,12 @@ def analyze():
             print(f"[app] Cache HIT — {(time.time()-t_request)*1000:.0f}ms", flush=True)
             return render_template("result.html", **cached)
     except Exception as e:
-        print(f"[app] Cache check error (non-fatal): {e}", flush=True)
+        print(f"[app] Cache error (non-fatal): {e}", flush=True)
         cache_module = None
 
     # ── Run ATS scoring + Groq IN PARALLEL ───────────────────────────────────
     from matcher import compute_ats_score
     from gemini_analyzer import analyze_resume as ai_analyze, _fallback
-
-    match_result = None
-    ai = None
 
     t0 = time.time()
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
@@ -111,46 +102,38 @@ def analyze():
 
         try:
             match_result = future_match.result(timeout=30)
-            print(f"[app] Matcher done: ats={match_result['ats_score']}", flush=True)
+            print(f"[app] Matcher: ats={match_result['ats_score']}", flush=True)
         except Exception as e:
-            print(f"[app] Matcher error: {e}", flush=True)
             return render_template("index.html", sample_jds=SAMPLE_JDS,
                                    error=f"Scoring failed: {str(e)}")
 
         try:
             ai = future_ai.result(timeout=50)
-            print(f"[app] Groq done: ats={ai.get('ats_score', 'N/A')}", flush=True)
+            print(f"[app] Groq: ats={ai.get('ats_score', 'N/A')}", flush=True)
         except Exception as e:
-            print(f"[app] Groq failed (using fallback): {e}", flush=True)
+            print(f"[app] Groq fallback: {e}", flush=True)
             ai = _fallback("with_jd" if jd_text else "without_jd", str(e)[:80])
 
     print(f"[app] Parallel stage: {(time.time()-t0)*1000:.0f}ms", flush=True)
 
-    # ── Use matcher as ground truth for scores ────────────────────────────────
-    # IMPORTANT: matcher ATS score is always reliable. Use it as final score.
-    final_ats_score   = match_result["ats_score"]
-    final_job_fit     = match_result["job_fit_score"]
-    final_percentile  = match_result["percentile"]
-    matched_skills    = match_result["matched_keywords"]
-    missing_skills    = match_result["missing_skills_categorized"]
+    # ── Matcher is ground truth for keyword scores ────────────────────────────
+    final_ats_score  = match_result["ats_score"]
+    final_job_fit    = match_result["job_fit_score"]
+    final_percentile = match_result["percentile"]
 
-    # Groq provides the narrative analysis on top
-    # Only use Groq's ats_score if matcher score seems off (sanity check)
+    # Blend with Groq if it returned a valid score
     groq_ats = float(ai.get("ats_score", 0))
-    if groq_ats > 0 and abs(groq_ats - final_ats_score) > 30:
-        # Large discrepancy — trust matcher
-        print(f"[app] ATS discrepancy: matcher={final_ats_score} groq={groq_ats} — using matcher", flush=True)
-    elif groq_ats > 0:
-        # Blend them — matcher 70%, groq 30%
+    if groq_ats > 0 and abs(groq_ats - final_ats_score) <= 30:
         final_ats_score = round(0.7 * final_ats_score + 0.3 * groq_ats, 1)
-        print(f"[app] ATS blended: {final_ats_score}", flush=True)
+
+    # Use matcher's categorized skills
+    ai["matched_skills"] = match_result["matched_keywords"]
+    ai["missing_skills"] = match_result["missing_skills_categorized"]
 
     # ── Validation layer ──────────────────────────────────────────────────────
     fixes_applied = []
     try:
         from validator import validate_and_fix
-        ai["matched_skills"] = matched_skills
-        ai["missing_skills"] = missing_skills
         ai, fixes_applied = validate_and_fix(ai, match_result)
     except Exception as e:
         print(f"[app] Validator error (non-fatal): {e}", flush=True)
@@ -163,17 +146,16 @@ def analyze():
     except Exception as e:
         print(f"[app] Chart error (non-fatal): {e}", flush=True)
 
-    # ── Safe score breakdown ──────────────────────────────────────────────────
+    # ── Score breakdown fallback ──────────────────────────────────────────────
     score_breakdown = ai.get("score_breakdown", {})
     if not score_breakdown or all(v == 0 for v in score_breakdown.values()):
-        # Groq didn't return breakdown — estimate from matcher
         kw  = match_result.get("keyword_score", 50)
         cos = match_result.get("cosine_similarity", 0.5) * 100
         score_breakdown = {
             "skills_match":     round(min(kw / 100 * 30, 30), 1),
             "experience_depth": round(min(cos / 100 * 25, 25), 1),
             "projects_quality": 7.5,
-            "tools_tech_stack": round(min(len(matched_skills) / 10 * 10, 10), 1),
+            "tools_tech_stack": round(min(len(match_result["matched_keywords"]) / 10 * 10, 10), 1),
             "resume_quality":   6.0,
             "proof_of_work":    5.0,
         }
@@ -195,8 +177,8 @@ def analyze():
             "metrics_found": [], "links_detected": False,
             "github_detected": False, "summary": "",
         }),
-        matched_skills       = matched_skills,
-        missing_skills       = missing_skills,
+        matched_skills       = match_result["matched_keywords"],
+        missing_skills       = match_result["missing_skills_categorized"],
         skill_validation     = ai.get("skill_validation", []),
         experience_analysis  = ai.get("experience_analysis", {
             "total_experience_level": "Junior", "skills_depth": []
@@ -207,7 +189,8 @@ def analyze():
         }),
         project_analysis     = ai.get("project_analysis", []),
         benchmark_comparison = ai.get("benchmark_comparison", {
-            "vs_average_candidate": "", "vs_top_10_percent": "",
+            "vs_average_candidate": "",
+            "vs_top_10_percent":    "",
             "shortlist_probability": int(final_percentile * 0.6),
         }),
         recruiter_feedback   = ai.get("recruiter_feedback", []),
@@ -271,4 +254,4 @@ if __name__ == "__main__":
     if not os.environ.get("GROQ_API_KEY"):
         print("WARNING: GROQ_API_KEY not set!", flush=True)
     port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=False, port=port)

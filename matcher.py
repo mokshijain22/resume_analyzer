@@ -1,19 +1,33 @@
 """
-matcher.py — Lightweight ATS scoring using TF-IDF cosine similarity.
-NO sentence-transformers. NO torch. NO heavy models.
-RAM usage: ~10 MB (vs ~1.2 GB with sentence-transformers).
-Render free tier compatible (512 MB limit).
-
-Scoring logic (defensible in interviews):
-  - TF-IDF vectorizes resume + JD into term-frequency vectors
-  - Cosine similarity measures semantic overlap (not just exact keywords)
-  - Keyword matching adds precision for role-specific terms
-  - Blended: 55% TF-IDF similarity + 45% keyword match
+matcher.py — ATS scoring with sentence-transformers cosine similarity.
+Model loads ONCE at startup (singleton pattern).
+Embedding cache avoids recomputing same text.
 """
 import re
 import time
-from sklearn.feature_extraction.text import TfidfVectorizer
+import hashlib
+import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
+
+# ── Singleton model — loads once at import time ───────────────────────────────
+_MODEL: SentenceTransformer | None = None
+_EMBED_CACHE: dict = {}
+
+
+def _get_model() -> SentenceTransformer:
+    global _MODEL
+    if _MODEL is None:
+        t0 = time.time()
+        print("[matcher] Loading sentence-transformer model...", flush=True)
+        _MODEL = SentenceTransformer("all-MiniLM-L6-v2")
+        print(f"[matcher] Model ready in {time.time()-t0:.2f}s", flush=True)
+    return _MODEL
+
+
+# Pre-load at import time so first request is fast
+_get_model()
+
 
 # ── Keyword bank with priority tiers ─────────────────────────────────────────
 CRITICAL_KEYWORDS = [
@@ -38,37 +52,31 @@ OPTIONAL_KEYWORDS = [
 
 
 def _clean(text: str) -> str:
-    """Lowercase, remove special chars, normalise whitespace."""
-    text = text.lower()
-    text = re.sub(r"[^a-z0-9\s\+\#]", " ", text)
-    return re.sub(r"\s+", " ", text).strip()
+    return re.sub(r"\s+", " ", text.lower().strip())
+
+
+def _get_embedding(text: str) -> np.ndarray:
+    """Cached embedding — never recomputes the same text."""
+    key = hashlib.md5(text.encode()).hexdigest()
+    if key not in _EMBED_CACHE:
+        _EMBED_CACHE[key] = _get_model().encode([text])[0]
+    return _EMBED_CACHE[key]
 
 
 def compute_ats_score(resume_text: str, jd_text: str) -> dict:
-    """
-    Returns full ATS scoring dict.
-    Uses TF-IDF cosine similarity — no external model download needed.
-    """
     t_total = time.time()
+    timings: dict = {}
 
     resume_clean = _clean(resume_text)
     jd_clean     = _clean(jd_text)
 
-    # ── Stage 1: TF-IDF cosine similarity ────────────────────────────────────
+    # ── Stage 1: Semantic similarity ─────────────────────────────────────────
     t0 = time.time()
-    try:
-        vectorizer = TfidfVectorizer(
-            ngram_range=(1, 2),   # unigrams + bigrams for better context
-            stop_words="english",
-            max_features=5000,
-        )
-        tfidf_matrix = vectorizer.fit_transform([resume_clean, jd_clean])
-        cos_sim      = float(cosine_similarity(tfidf_matrix[0], tfidf_matrix[1])[0][0])
-        cos_score    = cos_sim * 100
-    except Exception:
-        cos_score = 50.0
-        cos_sim   = 0.5
-    tfidf_ms = round((time.time() - t0) * 1000)
+    emb_resume = _get_embedding(resume_clean)
+    emb_jd     = _get_embedding(jd_clean)
+    cos_sim    = float(cosine_similarity([emb_resume], [emb_jd])[0][0])
+    cos_score  = cos_sim * 100
+    timings["embedding_ms"] = round((time.time() - t0) * 1000)
 
     # ── Stage 2: Keyword matching ─────────────────────────────────────────────
     t0 = time.time()
@@ -87,17 +95,13 @@ def compute_ats_score(resume_text: str, jd_text: str) -> dict:
     all_jd      = jd_critical + jd_important + jd_optional
     all_matched = matched_critical + matched_important + matched_optional
     kw_score    = (len(all_matched) / len(all_jd) * 100) if all_jd else 50.0
-    kw_ms       = round((time.time() - t0) * 1000)
+    timings["keyword_ms"] = round((time.time() - t0) * 1000)
 
     # ── Stage 3: Blended ATS + derived scores ────────────────────────────────
-    # 55% TF-IDF (semantic) + 45% keyword (precision)
-    ats_score = round(0.55 * cos_score + 0.45 * kw_score, 2)
-
-    # Job fit — penalise missing critical skills heavily
+    ats_score        = round(0.6 * cos_score + 0.4 * kw_score, 2)
     critical_penalty = len(missing_critical) * 7
     job_fit_score    = max(0, round(ats_score - critical_penalty, 1))
 
-    # Percentile heuristic
     if ats_score >= 85:   percentile = 90
     elif ats_score >= 75: percentile = 75
     elif ats_score >= 65: percentile = 55
@@ -105,13 +109,8 @@ def compute_ats_score(resume_text: str, jd_text: str) -> dict:
     elif ats_score >= 45: percentile = 20
     else:                 percentile = 10
 
-    total_ms = round((time.time() - t_total) * 1000)
-
-    print(
-        f"[matcher] tfidf={tfidf_ms}ms kw={kw_ms}ms total={total_ms}ms "
-        f"cos={cos_sim:.3f} kw={kw_score:.1f} ats={ats_score}",
-        flush=True,
-    )
+    timings["total_ms"] = round((time.time() - t_total) * 1000)
+    print(f"[matcher] {timings} ats={ats_score}", flush=True)
 
     def cap(lst): return [kw.title() for kw in lst]
 
@@ -128,14 +127,14 @@ def compute_ats_score(resume_text: str, jd_text: str) -> dict:
             "important": cap(missing_important),
             "optional":  cap(missing_optional),
         },
+        "timings": timings,
     }
 
 
 if __name__ == "__main__":
-    RESUME = "Python PyTorch scikit-learn Flask pandas numpy Git NLP HuggingFace machine learning deep learning REST API deployed on Render"
-    JD     = "ML Engineer Python PyTorch NLP HuggingFace Flask Docker AWS SQL required"
+    RESUME = "Python PyTorch scikit-learn Flask pandas numpy Git NLP HuggingFace machine learning deep learning REST API"
+    JD     = "ML Engineer Python PyTorch NLP HuggingFace Flask Docker AWS SQL MLflow required"
     r = compute_ats_score(RESUME, JD)
-    print(f"ATS Score   : {r['ats_score']}%")
-    print(f"Job Fit     : {r['job_fit_score']}%")
-    print(f"Matched     : {r['matched_keywords']}")
-    print(f"Critical gap: {r['missing_skills_categorized']['critical']}")
+    print(f"ATS     : {r['ats_score']}%")
+    print(f"Job Fit : {r['job_fit_score']}%")
+    print(f"Timings : {r['timings']}")
