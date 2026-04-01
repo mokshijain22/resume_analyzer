@@ -271,4 +271,4 @@ if __name__ == "__main__":
     if not os.environ.get("GROQ_API_KEY"):
         print("WARNING: GROQ_API_KEY not set!", flush=True)
     port = int(os.environ.get("PORT", 5000))
-    app.run(debug=False, port=port)
+    app.run(host="0.0.0.0", port=port)
