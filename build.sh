@@ -1,19 +1,25 @@
 #!/usr/bin/env bash
-# build.sh — runs during Render build phase BEFORE the server starts.
-# Pre-downloads sentence-transformer model so worker startup is instant.
+# build.sh — Render build script.
+# No heavy model downloads. TF-IDF is pure scikit-learn, loads instantly.
 set -e
 
-echo "==> Installing dependencies..."
+echo "==> Installing Python dependencies..."
 pip install -r requirements.txt
 
-echo "==> Pre-downloading sentence-transformer model..."
+echo "==> Verifying key imports..."
 python -c "
-from sentence_transformers import SentenceTransformer
-print('Downloading all-MiniLM-L6-v2...')
-model = SentenceTransformer('all-MiniLM-L6-v2')
-# Run a test encode to confirm it works
-result = model.encode(['test sentence'])
-print(f'Model ready. Embedding shape: {result.shape}')
+import flask, groq, pdfplumber, plotly
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+print('All imports OK')
+
+# Quick smoke test of TF-IDF scorer
+from sklearn.feature_extraction.text import TfidfVectorizer
+v = TfidfVectorizer()
+m = v.fit_transform(['python machine learning flask', 'python nlp flask docker'])
+from sklearn.metrics.pairwise import cosine_similarity
+score = cosine_similarity(m[0], m[1])[0][0]
+print(f'TF-IDF smoke test: similarity={score:.3f} (should be ~0.4-0.7)')
 "
 
-echo "==> Build complete — model is cached."
+echo "==> Build complete."
