@@ -32,20 +32,22 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-
 .blob{position:absolute;border-radius:50%;filter:blur(70px);opacity:0.3}
 .blob-1{width:380px;height:380px;background:#ede9ff;top:-70px;right:-50px;animation:floatA 9s ease-in-out infinite}
 .blob-2{width:280px;height:280px;background:#d4f5e9;bottom:-40px;left:-40px;animation:floatB 11s ease-in-out infinite}
-.page{max-width:1100px;margin:0 auto;padding:24px 20px 80px;position:relative;z-index:1}
+.page{max-width:1100px;margin:0 auto;padding:24px 20px 60px;position:relative;z-index:1}
 
-/* NAV */
 nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;animation:fadeIn 0.4s ease both;flex-wrap:wrap;gap:8px}
 .logo{display:flex;align-items:center;gap:8px;text-decoration:none}
 .logo-mark{width:28px;height:28px;background:var(--ink);border-radius:7px;display:flex;align-items:center;justify-content:center}
 .logo-mark svg{width:13px;height:13px;fill:none;stroke:var(--bg);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .logo-name{font-family:'Playfair Display',serif;font-size:15px;font-weight:700;letter-spacing:-0.02em;color:var(--ink)}
+.nav-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .btn-back{font-size:11.5px;color:var(--muted);border:1px solid var(--border);border-radius:7px;padding:6px 12px;cursor:pointer;background:transparent;font-family:'DM Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:5px;text-decoration:none}
 .btn-back:hover{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)}
 .btn-back svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.btn-pdf{font-size:11.5px;color:var(--green);border:1px solid var(--green-border);border-radius:7px;padding:6px 14px;cursor:pointer;background:var(--green-bg);font-family:'DM Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;gap:6px;text-decoration:none;font-weight:500}
+.btn-pdf:hover{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-pdf svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
-/* VALIDATION NOTICE */
-.fixes-bar{display:flex;align-items:center;gap:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:9px 14px;margin-bottom:14px;font-size:12px;color:#92600a;animation:fadeUp 0.3s ease both}
+.fixes-bar{display:flex;align-items:center;gap:8px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;padding:9px 14px;margin-bottom:14px;font-size:12px;color:#92600a}
 .fixes-bar svg{width:13px;height:13px;stroke:#92600a;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
 /* BANNER */
@@ -60,7 +62,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .ring-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .ring-pct{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:#faf8f4;line-height:1;animation:countUp 0.4s 1.1s ease both;opacity:0;animation-fill-mode:both}
 .ring-lbl{font-family:'JetBrains Mono',monospace;font-size:7px;color:#6a6880;letter-spacing:0.08em;text-transform:uppercase;margin-top:1px}
-.conf-badge{display:inline-flex;align-items:center;gap:3px;border-radius:5px;padding:3px 7px;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.05em;white-space:nowrap}
+.conf-badge{display:inline-flex;align-items:center;gap:3px;border-radius:5px;padding:3px 7px;font-family:'JetBrains Mono',monospace;font-size:8.5px;letter-spacing:0.05em}
 .cb-high{background:rgba(0,200,150,0.15);border:1px solid rgba(0,200,150,0.3);color:#00c896}
 .cb-medium{background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.3);color:#f5a623}
 .cb-low{background:rgba(255,107,107,0.12);border:1px solid rgba(255,107,107,0.3);color:#ff8c8c}
@@ -90,8 +92,8 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .ev-num{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;line-height:1}
 .ev-num.good{color:var(--green)}
 .ev-num.warn{color:var(--orange)}
-.ev-txt{font-size:11px;color:var(--muted)}
 .ev-title{font-size:11.5px;font-weight:500;color:var(--ink2)}
+.ev-txt{font-size:11px;color:var(--muted)}
 
 /* CARDS */
 .card{background:var(--white);border:1px solid #ece9e2;border-radius:var(--rl);padding:18px 20px;transition:transform 0.18s,box-shadow 0.18s;position:relative;overflow:hidden}
@@ -102,6 +104,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .card.orange.at::before{background:linear-gradient(90deg,#f08060,#f5a623)}
 .card.red.at::before{background:linear-gradient(90deg,#ff6b6b,#ff8c8c)}
 .card.gold.at::before{background:linear-gradient(90deg,#f5a623,#fbbf24)}
+.card.blue.at::before{background:linear-gradient(90deg,#3b82f6,#60a5fa)}
 .sh{display:flex;align-items:center;gap:8px;margin-bottom:13px}
 .sb{width:3px;height:15px;border-radius:2px;flex-shrink:0}
 .st{font-family:'Playfair Display',serif;font-size:0.97rem;font-weight:700;color:var(--ink)}
@@ -112,7 +115,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .at-t::before{content:'';width:4px;height:4px;border-radius:50%;background:#00b894}
 .ai-txt{font-size:12.5px;color:#4a4862;line-height:1.85;font-weight:300}
 
-/* GRID */
+/* GRIDS */
 .g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
 .g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .mb{margin-bottom:14px}
@@ -131,8 +134,6 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .ci{font-size:11.5px;color:#4a4862;display:flex;align-items:flex-start;gap:5px;line-height:1.5}
 .ci-plus{color:var(--green);font-family:'JetBrains Mono',monospace;font-size:9.5px;flex-shrink:0;margin-top:1px}
 .ci-minus{color:var(--orange);font-family:'JetBrains Mono',monospace;font-size:9.5px;flex-shrink:0;margin-top:1px}
-
-/* DEFENSIBILITY */
 .def-box{background:#faf8f4;border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin-top:12px;cursor:pointer}
 .def-toggle{display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:500;color:var(--ink2)}
 .def-toggle svg{width:13px;height:13px;stroke:var(--subtle);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform 0.2s}
@@ -149,6 +150,16 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .act-why{font-size:11.5px;color:var(--orange);margin-bottom:3px;line-height:1.5}
 .act-how{font-size:11.5px;color:var(--muted);line-height:1.5;font-weight:300}
 
+/* EXTRACTED PROJECTS */
+.proj-extract-list{display:flex;flex-direction:column;gap:7px}
+.pe-item{display:flex;align-items:flex-start;gap:9px;padding:10px 14px;background:#faf8f4;border:1px solid var(--border);border-radius:9px;font-size:12.5px;color:var(--ink2);line-height:1.6}
+.pe-num{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--accent);background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:4px;padding:2px 6px;flex-shrink:0;margin-top:2px;white-space:nowrap}
+
+/* SKILL GAPS */
+.gap-list{display:flex;flex-direction:column;gap:7px}
+.gap-item{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;color:var(--ink2);line-height:1.6;padding:10px 14px;background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:9px}
+.gap-item svg{width:13px;height:13px;stroke:var(--orange);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0;margin-top:2px}
+
 /* PILLS */
 .pill-g{display:flex;flex-wrap:wrap;gap:5px}
 .pill{font-size:11px;padding:4px 10px;border-radius:6px;font-weight:400;opacity:0;animation:popIn 0.3s ease both;animation-fill-mode:both}
@@ -159,18 +170,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .tier-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;margin-top:8px}
 .tier-lbl:first-child{margin-top:0}
 
-/* SKILL VALIDATION */
-.sv-tbl{width:100%;border-collapse:collapse;font-size:12px}
-.sv-tbl th{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtle);padding:0 9px 7px 0;text-align:left;font-weight:500}
-.sv-tbl td{padding:7px 9px 7px 0;border-top:1px solid var(--border);color:var(--ink2);vertical-align:top}
-.pb{display:inline-flex;align-items:center;font-size:10px;padding:2px 7px;border-radius:4px;font-family:'JetBrains Mono',monospace}
-.pb-strong{background:#f0fdf7;color:var(--green);border:1px solid var(--green-border)}
-.pb-moderate{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)}
-.pb-weak{background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border)}
-.pb-none{background:#f5f4f0;color:var(--subtle);border:1px solid var(--border)}
-.sv-rsn{font-size:11px;color:var(--muted);font-weight:300;line-height:1.5;margin-top:1px}
-
-/* EXPERIENCE */
+/* EXPERIENCE DEPTH */
 .dep-tbl{width:100%;border-collapse:collapse;font-size:12px}
 .dep-tbl th{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;color:var(--subtle);padding:0 9px 7px 0;text-align:left;font-weight:500}
 .dep-tbl td{padding:7px 9px 7px 0;border-top:1px solid var(--border);color:var(--ink2);vertical-align:top}
@@ -178,6 +178,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .lv-a{background:#f0fdf7;color:var(--green);border:1px solid var(--green-border)}
 .lv-i{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)}
 .lv-b{background:var(--orange-bg);color:var(--orange);border:1px solid var(--orange-border)}
+.dep-rsn{font-size:11px;color:var(--muted);font-weight:300;line-height:1.5;margin-top:1px}
 
 /* PROJECTS */
 .proj-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:9px}
@@ -213,7 +214,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .risk-p{display:flex;align-items:center;gap:5px;font-size:11px;padding:5px 10px;border-radius:7px;background:#fff5f0;border:1px solid #ffd4be;color:var(--orange)}
 .risk-p svg{width:11px;height:11px;stroke:var(--orange);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 
-/* BEFORE / AFTER */
+/* BEFORE AFTER */
 .ba-row{display:grid;grid-template-columns:1fr auto 1fr;gap:9px;align-items:center}
 .ba-c{background:#faf8f4;border:1px solid var(--border);border-radius:10px;padding:13px;text-align:center}
 .ba-c.after{background:var(--green-bg);border-color:var(--green-border)}
@@ -222,9 +223,6 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .ba-sc.green{color:var(--green)}
 .ba-arr{text-align:center;font-size:1.2rem;color:var(--subtle)}
 .ba-delta{font-size:10px;color:var(--green);font-weight:500;margin-top:3px;font-family:'JetBrains Mono',monospace}
-.ba-imprs{margin-top:10px;display:flex;flex-direction:column;gap:4px}
-.ba-impr{font-size:11.5px;color:var(--green);display:flex;align-items:flex-start;gap:5px;line-height:1.5}
-.ba-impr::before{content:'✓';flex-shrink:0;font-weight:500}
 
 /* BULLETS */
 .bul-list{display:flex;flex-direction:column;gap:10px}
@@ -232,8 +230,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .bul-before{padding:9px 13px;background:#faf8f4;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--muted);line-height:1.7;font-weight:300}
 .bul-after{padding:9px 13px;background:var(--green-bg);font-size:12px;color:#0a5c3e;line-height:1.7;border-left:3px solid var(--green)}
 .b-tag{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.08em;text-transform:uppercase;font-weight:500;margin-bottom:3px}
-.bt-b{color:var(--subtle)}
-.bt-a{color:var(--green)}
+.bt-b{color:var(--subtle)}.bt-a{color:var(--green)}
 
 /* ROADMAP */
 .rm-list{display:flex;flex-direction:column;gap:0}
@@ -248,12 +245,6 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .rm-task{font-size:12px;color:var(--muted);font-weight:300;line-height:1.6;margin-bottom:2px}
 .rm-outcome{font-size:11px;color:var(--green);font-family:'JetBrains Mono',monospace}
 
-/* RADAR EXPLANATION */
-.re-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:7px;margin-top:10px}
-.re-item{background:#faf8f4;border:1px solid var(--border);border-radius:7px;padding:9px 11px}
-.re-cat{font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:0.07em;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
-.re-txt{font-size:11px;color:var(--muted);line-height:1.5;font-weight:300}
-
 /* COVER */
 .cover-c{background:linear-gradient(135deg,#f6f4ff 0%,#f0fdf9 100%);border:1px solid var(--accent-border);border-radius:var(--rl);padding:20px;position:relative;overflow:hidden}
 .cover-c::after{content:'COVER';position:absolute;right:-8px;top:8px;font-family:'Playfair Display',serif;font-size:4rem;font-weight:900;color:rgba(108,99,255,0.05);pointer-events:none;user-select:none}
@@ -262,39 +253,61 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 .copy-btn:hover{color:var(--accent);border-color:var(--accent-border);background:var(--accent-bg)}
 .copy-btn svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
+/* PDF DOWNLOAD BUTTON */
+.pdf-section{display:flex;justify-content:center;margin-top:36px;padding-top:28px;border-top:1px solid var(--border)}
+.btn-download-pdf{display:flex;align-items:center;gap:10px;padding:14px 32px;background:var(--ink);color:var(--bg);border:none;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
+.btn-download-pdf:hover{background:#2d2a42;transform:translateY(-2px);box-shadow:0 10px 28px rgba(26,24,37,0.2)}
+.btn-download-pdf:active{transform:translateY(0)}
+.btn-download-pdf svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.pdf-hint{font-size:11.5px;color:var(--subtle);margin-top:8px;text-align:center;font-family:'JetBrains Mono',monospace;letter-spacing:0.04em}
+
 /* RESPONSIVE */
-@media (max-width:1024px){.page{padding:20px 16px 60px}}
-@media (max-width:900px){
+@media(max-width:1024px){.page{padding:20px 16px 60px}}
+@media(max-width:900px){
   .banner-grid{flex-direction:column}
   .banner-ring{padding-right:0;border-right:none;padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);flex-direction:row;gap:14px;align-items:center}
   .bstats{gap:8px}
   .bs{border-right:none;padding:0 10px 0 0;min-width:70px}
   .g2{grid-template-columns:1fr}
-  .g3{grid-template-columns:1fr 1fr}
   .bench-g{grid-template-columns:1fr}
   .contrib-g{grid-template-columns:1fr}
 }
-@media (max-width:620px){
+@media(max-width:620px){
   .page{padding:14px 12px 50px}
   .banner{padding:18px 16px}
   .bs-val{font-size:1.2rem}
-  .g3{grid-template-columns:1fr}
   .proj-g{grid-template-columns:1fr}
   .ba-row{grid-template-columns:1fr auto 1fr}
   .act-card{grid-template-columns:1fr}
   .act-num{display:none}
 }
+
+/* PRINT STYLES FOR PDF */
+@media print{
+  .blob-wrap,.btn-back,.btn-pdf,.fixes-bar,.nav-right{display:none!important}
+  .page{padding:10px;max-width:100%}
+  .banner{border-radius:8px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .card{break-inside:avoid;box-shadow:none}
+  body{background:white}
+  nav{margin-bottom:12px}
+}
 </style>
 
 <div class="blob-wrap"><div class="blob blob-1"></div><div class="blob blob-2"></div></div>
 
-<div class="page">
+<div class="page" id="reportContent">
   <nav>
     <div class="logo">
       <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
       <span class="logo-name">ResumeAI</span>
     </div>
-    <a href="/" class="btn-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>New analysis</a>
+    <div class="nav-right">
+      <a href="/" class="btn-back"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>New analysis</a>
+      <button class="btn-pdf" onclick="downloadPDF()">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Save Report
+      </button>
+    </div>
   </nav>
 
   {% if fixes_applied %}
@@ -342,7 +355,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
         </div>
         <div class="bs">
           <div class="bs-lbl">Level</div>
-          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#faf8f4;margin-top:4px;line-height:1.2;position:relative;z-index:1">{{ experience_analysis.total_experience_level }}</div>
+          <div style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#faf8f4;margin-top:4px;line-height:1.2">{{ experience_analysis.total_experience_level }}</div>
         </div>
       </div>
     </div>
@@ -350,13 +363,13 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 
   <!-- EVIDENCE STRIP -->
   <div class="ev-strip">
-    {% set ev = evidence_summary %}
+    {% set ev=evidence_summary %}
     <div class="ev-pill"><span class="ev-num {% if ev.projects_detected>=2 %}good{% else %}warn{% endif %}">{{ ev.projects_detected }}</span><div><div class="ev-title">Projects</div><div class="ev-txt">detected</div></div></div>
     <div class="ev-pill"><span class="ev-num {% if ev.projects_with_metrics>=1 %}good{% else %}warn{% endif %}">{{ ev.projects_with_metrics }}</span><div><div class="ev-title">With metrics</div><div class="ev-txt">outcomes</div></div></div>
     <div class="ev-pill"><span class="ev-num {% if ev.projects_with_deployment>=1 %}good{% else %}warn{% endif %}">{{ ev.projects_with_deployment }}</span><div><div class="ev-title">Deployed</div><div class="ev-txt">projects</div></div></div>
-    <div class="ev-pill"><span class="ev-num {% if ev.github_detected %}good{% else %}warn{% endif %}">{% if ev.github_detected %}✓{% else %}✗{% endif %}</span><div><div class="ev-title">GitHub</div><div class="ev-txt">{% if ev.github_detected %}detected{% else %}not found{% endif %}</div></div></div>
+    <div class="ev-pill"><span class="ev-num {% if ev.github_detected %}good{% else %}warn{% endif %}">{% if ev.github_detected %}✓{% else %}✗{% endif %}</span><div><div class="ev-title">GitHub</div><div class="ev-txt">{% if ev.github_detected %}found{% else %}not found{% endif %}</div></div></div>
     <div class="ev-pill"><span class="ev-num" style="color:var(--ink);font-size:0.9rem">{{ ev.tools_detected|length }}</span><div><div class="ev-title">Tools</div><div class="ev-txt">verified</div></div></div>
-    {% if ev.metrics_found %}<div class="ev-pill"><span class="ev-num good" style="font-size:0.85rem">{{ ev.metrics_found[0] }}</span><div><div class="ev-title">Best metric</div><div class="ev-txt">found</div></div></div>{% endif %}
+    {% if ev.metrics_found %}<div class="ev-pill"><span class="ev-num good" style="font-size:0.8rem">{{ ev.metrics_found[0] }}</span><div><div class="ev-title">Best metric</div><div class="ev-txt">found</div></div></div>{% endif %}
   </div>
 
   <!-- TOP 3 ACTIONS + SCORE BREAKDOWN -->
@@ -367,13 +380,18 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
         {% for a in top_3_actions %}
         <div class="act-card">
           <div class="act-num">{{ a.priority }}</div>
-          <div><div class="act-title">{{ a.action }}</div><div class="act-why">Why: {{ a.why }}</div><div class="act-how">How: {{ a.how }}</div></div>
+          <div>
+            <div class="act-title">{{ a.action }}</div>
+            {% if a.why %}<div class="act-why">Why: {{ a.why }}</div>{% endif %}
+            {% if a.how %}<div class="act-how">How: {{ a.how }}</div>{% endif %}
+          </div>
         </div>
         {% else %}
-        <div style="font-size:12.5px;color:var(--subtle)">Review other sections for improvement areas.</div>
+        <div style="font-size:12.5px;color:var(--subtle)">See other sections for improvement areas.</div>
         {% endfor %}
       </div>
     </div>
+
     <div class="card at purple">
       <div class="sh"><div class="sb" style="background:var(--accent)"></div><div class="st">Score breakdown</div></div>
       <div class="bd-list">
@@ -381,7 +399,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
         {% for lbl,sc,mx,col in [("Skills match",bd.skills_match,30,"#6c63ff"),("Experience depth",bd.experience_depth,25,"#00b894"),("Projects quality",bd.projects_quality,15,"#f08060"),("Tools & stack",bd.tools_tech_stack,10,"#1d4ed8"),("Resume quality",bd.resume_quality,10,"#8b5cf6"),("Proof of work",bd.proof_of_work,10,"#f5a623")] %}
         <div class="bd-item">
           <div class="bd-top"><span class="bd-lbl">{{ lbl }}</span><span class="bd-sc">{{ sc|round(1) }} / {{ mx }}</span></div>
-          <div class="bd-bg"><div class="bd-bar" style="--w:{{ (sc/mx*100)|round }}%;width:0;background:{{ col }};animation-delay:{{ loop.index0*0.07 }}s"></div></div>
+          <div class="bd-bg"><div class="bd-bar" style="--w:{{ (sc/mx*100)|round if mx>0 else 0 }}%;width:0;background:{{ col }};animation-delay:{{ loop.index0*0.07 }}s"></div></div>
         </div>
         {% endfor %}
       </div>
@@ -396,16 +414,40 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
     </div>
   </div>
 
-  <!-- OVERALL FEEDBACK -->
+  <!-- OVERALL ASSESSMENT -->
   <div class="card at purple mb sec" style="animation-delay:0.14s">
-    <div class="ai-tag at-p">LLaMA-3.3-70b · Evidence-based</div>
+    <div class="ai-tag at-p">LLaMA-3.3-70b · Evidence-based recruiter analysis</div>
     <div class="sh" style="margin-bottom:9px"><div class="sb" style="background:var(--accent)"></div><div class="st">Overall assessment</div></div>
     <div class="ai-txt">{{ overall_feedback }}</div>
     <div style="margin-top:8px;font-size:11.5px;color:var(--subtle);font-style:italic">Confidence: {{ confidence.level }} — {{ confidence.reason }}</div>
   </div>
 
-  <!-- SKILLS -->
-  <div class="g2 mb sec" style="animation-delay:0.17s">
+  <!-- EXTRACTED PROJECTS -->
+  {% if extracted_projects %}
+  <div class="card at blue mb sec" style="animation-delay:0.16s">
+    <div class="sh"><div class="sb" style="background:#3b82f6"></div><div class="st">Extracted projects</div></div>
+    <div class="proj-extract-list">
+      {% for proj in extracted_projects %}
+      <div class="pe-item"><span class="pe-num">P{{ loop.index }}</span>{{ proj }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- SKILL GAPS (from recruiter prompt) -->
+  {% if skill_gaps_display %}
+  <div class="card at orange mb sec" style="animation-delay:0.17s">
+    <div class="sh"><div class="sb" style="background:#f08060"></div><div class="st">Skill gap analysis</div></div>
+    <div class="gap-list">
+      {% for gap in skill_gaps_display %}
+      <div class="gap-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>{{ gap }}</div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- MATCHED + MISSING SKILLS -->
+  <div class="g2 mb sec" style="animation-delay:0.18s">
     <div class="card">
       <div class="sh"><div class="sb" style="background:var(--green)"></div><div class="st">Matched skills</div></div>
       <div class="pill-g">
@@ -426,43 +468,19 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
   <div class="card mb sec" style="animation-delay:0.2s;padding:18px 20px">
     <div class="sh"><div class="sb" style="background:#00b894"></div><div class="st">Skill coverage radar</div></div>
     <div id="radarChart" style="height:380px"></div>
-    {% if radar_explanation %}
-    <div class="re-g">
-      {% for cat,exp in radar_explanation.items() %}<div class="re-item"><div class="re-cat">{{ cat }}</div><div class="re-txt">{{ exp }}</div></div>{% endfor %}
-    </div>
-    {% endif %}
   </div>
-
-  <!-- SKILL VALIDATION -->
-  {% if skill_validation %}
-  <div class="card at teal mb sec" style="animation-delay:0.22s">
-    <div class="sh"><div class="sb" style="background:#00b894"></div><div class="st">Skill validation — proof check</div></div>
-    <table class="sv-tbl">
-      <tr><th>Skill</th><th>Listed</th><th>Evidenced</th><th>Proof</th><th>Reason</th></tr>
-      {% for sv in skill_validation %}
-      <tr>
-        <td style="font-weight:500;color:var(--ink)">{{ sv.skill }}</td>
-        <td>{% if sv.listed %}<span style="color:var(--green)">✓</span>{% else %}<span style="color:var(--subtle)">✗</span>{% endif %}</td>
-        <td>{% if sv.evidenced %}<span style="color:var(--green)">✓</span>{% else %}<span style="color:var(--orange)">✗</span>{% endif %}</td>
-        <td><span class="pb pb-{{ sv.proof_strength|lower }}">{{ sv.proof_strength }}</span></td>
-        <td><div class="sv-rsn">{{ sv.reason }}</div></td>
-      </tr>
-      {% endfor %}
-    </table>
-  </div>
-  {% endif %}
 
   <!-- EXPERIENCE DEPTH -->
   {% if experience_analysis.skills_depth %}
-  <div class="card at teal mb sec" style="animation-delay:0.24s">
+  <div class="card at teal mb sec" style="animation-delay:0.22s">
     <div class="sh"><div class="sb" style="background:#00b894"></div><div class="st">Experience depth per skill</div></div>
     <table class="dep-tbl">
-      <tr><th>Skill</th><th>Level</th><th>Reason</th><th style="text-align:center">Metrics</th></tr>
+      <tr><th>Skill</th><th>Level</th><th>Evidence</th><th style="text-align:center">Metrics</th></tr>
       {% for item in experience_analysis.skills_depth %}
       <tr>
         <td style="font-weight:500;color:var(--ink)">{{ item.skill }}</td>
         <td><span class="lv {% if item.level=='Advanced' %}lv-a{% elif item.level=='Intermediate' %}lv-i{% else %}lv-b{% endif %}">{{ item.level }}</span></td>
-        <td><div class="sv-rsn">{{ item.reason }}</div></td>
+        <td><div class="dep-rsn">{{ item.reason }}</div></td>
         <td style="text-align:center">{% if item.has_metrics %}✅{% else %}⬜{% endif %}</td>
       </tr>
       {% endfor %}
@@ -470,9 +488,9 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
   </div>
   {% endif %}
 
-  <!-- PROJECT ANALYSIS -->
+  <!-- PROJECT QUALITY -->
   {% if project_analysis %}
-  <div class="card at orange mb sec" style="animation-delay:0.26s">
+  <div class="card at orange mb sec" style="animation-delay:0.24s">
     <div class="sh"><div class="sb" style="background:#f08060"></div><div class="st">Project quality analysis</div></div>
     <div class="proj-g">
       {% for p in project_analysis %}
@@ -481,12 +499,10 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
         <div class="proj-scores">
           <div class="ps-item"><div class="ps-num">{{ p.score }}<span style="font-size:0.85rem;color:var(--subtle)">/10</span></div><div class="ps-lbl">Overall</div></div>
           {% if p.production_readiness_score is defined %}<div class="ps-item"><div class="ps-num" style="color:{% if p.production_readiness_score>=7 %}var(--green){% elif p.production_readiness_score>=4 %}var(--orange){% else %}var(--red){% endif %}">{{ p.production_readiness_score }}<span style="font-size:0.85rem;color:var(--subtle)">/10</span></div><div class="ps-lbl">Prod</div></div>{% endif %}
-          {% if p.impact_score is defined %}<div class="ps-item"><div class="ps-num" style="color:var(--accent)">{{ p.impact_score }}<span style="font-size:0.85rem;color:var(--subtle)">/10</span></div><div class="ps-lbl">Impact</div></div>{% endif %}
         </div>
         <div class="proj-tags">
           <span class="pt {% if p.has_deployment %}pt-yes{% else %}pt-no{% endif %}">{% if p.has_deployment %}✓{% else %}✗{% endif %} Deployed</span>
           <span class="pt {% if p.has_metrics %}pt-yes{% else %}pt-no{% endif %}">{% if p.has_metrics %}✓{% else %}✗{% endif %} Metrics</span>
-          <span class="pt {% if p.real_world_relevance=='High' %}pt-yes{% else %}pt-no{% endif %}">{{ p.real_world_relevance }}</span>
         </div>
         <div class="proj-fb">{{ p.feedback }}</div>
       </div>
@@ -496,7 +512,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
   {% endif %}
 
   <!-- BENCHMARK + RISK -->
-  <div class="g2 mb sec" style="animation-delay:0.28s">
+  <div class="g2 mb sec" style="animation-delay:0.26s">
     <div class="card">
       <div class="sh"><div class="sb" style="background:#1d4ed8"></div><div class="st">Market benchmark</div></div>
       <div class="bench-g">
@@ -515,9 +531,9 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
     {% endif %}
   </div>
 
-  <!-- RECRUITER -->
+  <!-- RECRUITER FEEDBACK -->
   {% if recruiter_feedback %}
-  <div class="card at red mb sec" style="animation-delay:0.3s">
+  <div class="card at red mb sec" style="animation-delay:0.28s">
     <div class="ai-tag at-p">Recruiter simulation · decisive mode</div>
     <div class="sh" style="margin-bottom:11px"><div class="sb" style="background:#ff6b6b"></div><div class="st">Likely rejection reasons</div></div>
     <div class="rec-list">
@@ -533,22 +549,19 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 
   <!-- BEFORE / AFTER -->
   {% if before_after %}
-  <div class="card mb sec" style="animation-delay:0.32s">
+  <div class="card mb sec" style="animation-delay:0.3s">
     <div class="sh"><div class="sb" style="background:var(--green)"></div><div class="st">Before vs after improvements</div></div>
     <div class="ba-row">
       <div class="ba-c"><div class="ba-lbl">Current ATS</div><div class="ba-sc">{{ before_after.ats_score_before|round }}%</div></div>
       <div class="ba-arr">→</div>
       <div class="ba-c after"><div class="ba-lbl">After fixes</div><div class="ba-sc green">{{ before_after.ats_score_after|round }}%</div><div class="ba-delta">+{{ (before_after.ats_score_after-before_after.ats_score_before)|round }}pts</div></div>
     </div>
-    {% if before_after.key_improvements %}
-    <div class="ba-imprs">{% for i in before_after.key_improvements %}<div class="ba-impr">{{ i }}</div>{% endfor %}</div>
-    {% endif %}
   </div>
   {% endif %}
 
   <!-- IMPROVED BULLETS -->
   {% if improved_bullets %}
-  <div class="card at purple mb sec" style="animation-delay:0.34s">
+  <div class="card at purple mb sec" style="animation-delay:0.32s">
     <div class="ai-tag at-p">AI rewritten</div>
     <div class="sh" style="margin-bottom:12px"><div class="sb" style="background:var(--accent)"></div><div class="st">Improved bullet points</div></div>
     <div class="bul-list">
@@ -568,7 +581,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 
   <!-- ROADMAP -->
   {% if learning_roadmap %}
-  <div class="card at teal mb sec" style="animation-delay:0.36s">
+  <div class="card at teal mb sec" style="animation-delay:0.34s">
     <div class="sh"><div class="sb" style="background:#00b894"></div><div class="st">Week-by-week execution roadmap</div></div>
     <div class="rm-list">
       {% for w in learning_roadmap %}
@@ -588,7 +601,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
 
   <!-- COVER NOTE -->
   {% if cover_note %}
-  <div class="sec" style="animation-delay:0.38s">
+  <div class="sec mb" style="animation-delay:0.36s">
     <div class="cover-c">
       <div class="ai-tag at-t">AI generated · edit before use</div>
       <div class="sh" style="margin-bottom:11px"><div class="sb" style="background:#00b894"></div><div class="st">Cover note</div></div>
@@ -600,9 +613,21 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
     </div>
   </div>
   {% endif %}
+
+  <!-- PDF DOWNLOAD -->
+  <div class="pdf-section">
+    <div style="text-align:center">
+      <button class="btn-download-pdf" onclick="downloadPDF()">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Full Report as PDF
+      </button>
+      <div class="pdf-hint">Opens browser print dialog → Save as PDF</div>
+    </div>
+  </div>
 </div>
 
 <script>
+// RADAR CHART
 try{
   const raw={{ chart_json }};
   if(raw&&raw.data){
@@ -620,10 +645,14 @@ try{
 }catch(e){
   document.getElementById('radarChart').innerHTML='<div style="height:120px;display:flex;align-items:center;justify-content:center;color:#b0aec0;font-family:JetBrains Mono,monospace;font-size:11px">Chart unavailable</div>';
 }
+
+// DEFENSIBILITY TOGGLE
 function toggleDef(box){
   const c=box.querySelector('.def-content'),t=box.querySelector('.def-toggle');
   c.classList.toggle('show');t.classList.toggle('open');
 }
+
+// COPY BUTTON
 function copyText(id,btn){
   navigator.clipboard.writeText(document.getElementById(id).innerText).then(()=>{
     const o=btn.innerHTML;
@@ -631,5 +660,21 @@ function copyText(id,btn){
     btn.style.color='#0d7a52';btn.style.borderColor='#b6f0d8';btn.style.background='#f0fdf7';
     setTimeout(()=>{btn.innerHTML=o;btn.style.color='';btn.style.borderColor='';btn.style.background=''},2000);
   });
+}
+
+// PDF DOWNLOAD — uses browser print which gives highest quality PDF
+function downloadPDF(){
+  // Expand all collapsible sections before printing
+  document.querySelectorAll('.def-content').forEach(el=>{
+    el.classList.add('show');
+  });
+  document.querySelectorAll('.def-toggle').forEach(el=>{
+    el.classList.add('open');
+  });
+  // Set the print title to include candidate filename
+  const title = document.title;
+  document.title = 'ResumeAI — Full Analysis Report';
+  window.print();
+  document.title = title;
 }
 </script>
