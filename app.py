@@ -23,7 +23,14 @@ SAMPLE_JDS = {
     "Backend Developer": "Backend Developer needed. Required: Python or Node.js, REST APIs, PostgreSQL, MongoDB, Docker, CI/CD, Git, system design, authentication, microservices. Must have deployed production APIs.",
 }
 
-
+def calculate_shortlist(ats, percentile):
+    if ats < 50:
+        return min(40, ats)
+    elif ats <= 70:
+        return min(70, ats + 10)
+    else:
+        return min(90, ats + 15)
+    
 def allowed_file(fn: str) -> bool:
     return "." in fn and fn.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -63,6 +70,9 @@ def analyze():
     t0 = time.time()
     try:
         resume_text = parse_resume(file)
+        from project_extractor import extract_projects
+
+        extracted_projects_backend = extract_projects(resume_text)
     except Exception as e:
         return render_template("index.html", sample_jds=SAMPLE_JDS, error=f"Could not read your resume: {str(e)}")
 
@@ -114,7 +124,8 @@ def analyze():
     final_ats_score  = match_result["ats_score"]
     final_job_fit    = match_result["job_fit_score"]
     final_percentile = match_result["percentile"]
-
+    shortlist_percentage = calculate_shortlist(final_ats_score, final_percentile)
+        
     groq_ats = float(ai.get("ats_score", 0))
     if groq_ats > 0 and abs(groq_ats - final_ats_score) <= 30:
         final_ats_score = round(0.7 * final_ats_score + 0.3 * groq_ats, 1)
@@ -122,7 +133,23 @@ def analyze():
     ai["matched_skills"] = match_result["matched_keywords"]
     ai["missing_skills"] = match_result["missing_skills_categorized"]
 
-    # Validation layer
+    # 🔥 FIX AWS mismatch
+    # 🔥 GENERAL SKILL VALIDATION (not just AWS)
+    projects = extracted_projects_backend
+    projects_text = " ".join([str(p).lower() for p in projects])
+    matched = [s.lower() for s in match_result["matched_keywords"]]
+
+    # Skills that require proof (deployment / real usage)
+    critical_skills = ["aws", "docker", "mlflow", "kubernetes"]
+
+    for skill in critical_skills:
+        if skill in matched:
+            if skill not in projects_text:
+                if isinstance(ai["missing_skills"], dict):
+                    ai["missing_skills"].setdefault("Important", []).append(
+                        f"{skill.upper()} practical experience (not demonstrated in projects)"
+                    )  
+      # Validation layer
     fixes_applied = []
     try:
         from validator import validate_and_fix
@@ -151,8 +178,16 @@ def analyze():
             "resume_quality":   6.0,
             "proof_of_work":    5.0,
         }
+    benchmark = ai.get("benchmark_comparison", {})
 
+    if final_percentile < 90:
+        benchmark["vs_top_10_percent"] = ""
+        
+    if final_ats_score < 70:
+        ai["overall_feedback"] = ai["overall_feedback"].replace("Strong", "Moderate")
+        
     ctx = dict(
+        
         ats_score             = round(final_ats_score, 1),
         job_fit_score         = round(final_job_fit, 1),
         percentile            = int(final_percentile),
@@ -169,9 +204,9 @@ def analyze():
             "github_detected": False, "summary": "",
         }),
         matched_skills        = match_result["matched_keywords"],
-        missing_skills        = match_result["missing_skills_categorized"],
+        missing_skills        = ai.get("missing_skills", match_result["missing_skills_categorized"]),
         # NEW: extracted projects and skill gaps from structured recruiter prompt
-        extracted_projects    = ai.get("extracted_projects", []),
+        extracted_projects    = extracted_projects_backend,
         skill_gaps_display    = ai.get("skill_gaps_display", []),
         skill_validation      = ai.get("skill_validation", []),
         experience_analysis   = ai.get("experience_analysis", {
@@ -182,11 +217,8 @@ def analyze():
             "has_metrics": False, "has_real_world_datasets": False, "summary": "",
         }),
         project_analysis      = ai.get("project_analysis", []),
-        benchmark_comparison  = ai.get("benchmark_comparison", {
-            "vs_average_candidate": "",
-            "vs_top_10_percent":    "",
-            "shortlist_probability": int(final_percentile * 0.6),
-        }),
+        
+    
         recruiter_feedback    = ai.get("recruiter_feedback", []),
         risk_flags            = ai.get("risk_flags", []),
         radar_explanation     = ai.get("radar_explanation", {}),
@@ -206,6 +238,8 @@ def analyze():
         filename              = file.filename,
         fixes_applied         = fixes_applied,
     )
+    ctx["shortlist_probability"] = shortlist_percentage
+    ctx["benchmark_comparison"] = benchmark
 
     if cache_module:
         try:

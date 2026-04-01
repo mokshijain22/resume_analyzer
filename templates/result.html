@@ -350,7 +350,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
         </div>
         <div class="bs">
           <div class="bs-lbl">Shortlist</div>
-          <div class="bs-val {% if benchmark_comparison.shortlist_probability>=60 %}teal{% elif benchmark_comparison.shortlist_probability>=40 %}amber{% else %}red{% endif %}">{{ benchmark_comparison.shortlist_probability }}%</div>
+          <div class="bs-val {% if shortlist_probability>=70 %}teal{% elif shortlist_probability>=40 %}amber{% else %}red{% endif %}">{{ shortlist_probability }}%</div>
           <div class="bs-sub">probability</div>
         </div>
         <div class="bs">
@@ -518,7 +518,12 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
       <div class="bench-g">
         <div class="bench-c"><div class="bench-lbl">Avg candidate</div><div class="bench-desc" style="margin-top:4px;font-size:11.5px">{{ benchmark_comparison.vs_average_candidate }}</div></div>
         <div class="bench-c hl"><div class="bench-lbl">You</div><div class="bench-val">{{ percentile }}<span style="font-size:1rem">th</span></div></div>
-        <div class="bench-c"><div class="bench-lbl">Top 10%</div><div class="bench-desc" style="margin-top:4px;font-size:11.5px">{{ benchmark_comparison.vs_top_10_percent }}</div></div>
+        {% if benchmark_comparison.vs_top_10_percent %}
+          <div class="bench-c">
+            <div class="bench-lbl">Top 10%</div>
+            <div class="bench-desc">{{ benchmark_comparison.vs_top_10_percent }}</div>
+          </div>
+          {% endif %}
       </div>
     </div>
     {% if risk_flags %}
@@ -614,16 +619,7 @@ nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:
   </div>
   {% endif %}
 
-  <!-- PDF DOWNLOAD -->
-  <div class="pdf-section">
-    <div style="text-align:center">
-      <button class="btn-download-pdf" onclick="downloadPDF()">
-        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Download Full Report as PDF
-      </button>
-      <div class="pdf-hint">Opens browser print dialog → Save as PDF</div>
-    </div>
-  </div>
+
 </div>
 
 <script>
