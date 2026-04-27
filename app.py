@@ -113,7 +113,7 @@ def analyze():
 
         try:
             ai = future_ai.result(timeout=50)
-            print(f"[app] Groq done", flush=True)
+            print("[app] Groq done", flush=True)
         except Exception as e:
             print(f"[app] Groq fallback: {e}", flush=True)
             ai = _fallback("with_jd" if jd_text else "without_jd", str(e)[:80])

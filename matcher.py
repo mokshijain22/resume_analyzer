@@ -102,12 +102,18 @@ def compute_ats_score(resume_text: str, jd_text: str) -> dict:
     critical_penalty = len(missing_critical) * 7
     job_fit_score    = max(0, round(ats_score - critical_penalty, 1))
 
-    if ats_score >= 85:   percentile = 90
-    elif ats_score >= 75: percentile = 75
-    elif ats_score >= 65: percentile = 55
-    elif ats_score >= 55: percentile = 35
-    elif ats_score >= 45: percentile = 20
-    else:                 percentile = 10
+    if ats_score >= 85:
+        percentile = 90
+    elif ats_score >= 75:
+        percentile = 75
+    elif ats_score >= 65:
+        percentile = 55
+    elif ats_score >= 55:
+        percentile = 35
+    elif ats_score >= 45:
+        percentile = 20
+    else:
+        percentile = 10
 
     timings["total_ms"] = round((time.time() - t_total) * 1000)
     print(f"[matcher] {timings} ats={ats_score}", flush=True)
