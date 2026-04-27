@@ -3,7 +3,7 @@ Run this from D:\resume-analyzer\ to find exactly where the slowdown is.
 Command: python speed_test.py
 """
 import time
-import os
+import importlib
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -29,14 +29,15 @@ print("=" * 55)
 # ── Test 1: parser ─────────────────────────────────────────
 print("\n[1/4] Testing parser.py ...")
 t = time.time()
-from parser import extract_text
+importlib.import_module("parser")
 print(f"      Import done in {time.time()-t:.2f}s")
 # skip actual parse since we have no file, just measure import
 
 # ── Test 2: sentence-transformer (the usual suspect) ───────
 print("\n[2/4] Testing matcher.py (sentence-transformers load) ...")
 t = time.time()
-from matcher import compute_ats_score
+matcher_module = importlib.import_module("matcher")
+compute_ats_score = matcher_module.compute_ats_score
 elapsed = time.time() - t
 print(f"      Import done in {elapsed:.2f}s  {'<-- SLOW HERE' if elapsed > 10 else 'OK'}")
 
@@ -49,7 +50,8 @@ print(f"      ATS score: {result.get('ats_score', 'N/A')}")
 # ── Test 3: Groq API call ───────────────────────────────────
 print("\n[3/4] Testing gemini_analyzer.py (Groq API call) ...")
 t = time.time()
-from gemini_analyzer import analyze_resume
+gemini_module = importlib.import_module("gemini_analyzer")
+analyze_resume = gemini_module.analyze_resume
 elapsed = time.time() - t
 print(f"      Import done in {elapsed:.2f}s")
 
@@ -68,7 +70,8 @@ except Exception as e:
 # ── Test 4: charts ─────────────────────────────────────────
 print("\n[4/4] Testing charts.py ...")
 t = time.time()
-from charts import generate_radar_chart
+charts_module = importlib.import_module("charts")
+generate_radar_chart = charts_module.generate_radar_chart
 elapsed = time.time() - t
 print(f"      Import done in {elapsed:.2f}s")
 

@@ -58,7 +58,7 @@ def validate_and_fix(ai: dict, match: dict) -> tuple[dict, list[str]]:
     for flag in ai.get("risk_flags", []):
         fl = flag.lower()
         if "no github" in fl and ev.get("github_detected"):
-            fixes.append(f"Removed risk_flag 'no github' — github_detected=True")
+            fixes.append("Removed risk_flag 'no github' — github_detected=True")
             continue
         if "no metrics" in fl and ev.get("projects_with_metrics", 0) > 0:
             fixes.append(f"Removed risk_flag 'no metrics' — {ev['projects_with_metrics']} projects have metrics")
