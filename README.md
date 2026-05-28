@@ -152,8 +152,8 @@ Creates radar-chart visualizations for role-fit analysis.
 ### Clone Repository
 
 ```bash id="1m3r9o"
-git clone https://github.com/mokshijain22/resume_analyzer.git
-cd resume_analyzer
+git clone https://github.com/mokshijain22/ats-resume-analyzer.git
+cd ats-resume-analyzer
 ```
 
 ---
