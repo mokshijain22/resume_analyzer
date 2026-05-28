@@ -105,7 +105,7 @@ Benefits:
 ## Project Structure
 
 ```text id="53g7f1"
-resume-analyzer/
+ats-resume-analyzer/
 ├── app.py
 ├── matcher.py
 ├── parser.py
